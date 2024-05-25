@@ -1,0 +1,77 @@
+---
+# tasks file for node-exporter
+  
+  # Step 1: Download node_exporter file
+- name: Download {{ file_name }}
+  ansible.builtin.get_url:
+    url: "{{ file_url }}"
+    dest: /tmp
+    mode: '0777'
+  # Step 2: Create node_exporter group
+- name: Create node_exporter group
+  group:
+    name: "node_exporter"
+    state: present
+
+  # Step 3: Create new user
+- name: Create new user
+  ansible.builtin.user:
+    name: node_exporter
+    shell: /bin/false node_exporter
+    group: node_exporter
+    groups: node_exporter
+    append: yes 
+
+  # Step 4: Create node_exporter directory
+- name: Create node_exporter directory
+  become: true
+  ansible.builtin.file:
+    path: /etc/node_exporter
+    state: directory
+    owner: node_exporter
+    group: node_exporter
+    mode: "0777"
+
+  # Step 5: Extract .tar.gz file
+- name: Unarchive {{ file_name }}
+  ansible.builtin.unarchive:
+    src: /tmp/{{ file_name }}
+    dest: /opt/
+    remote_src: yes
+
+  # Step 6: Remove file extensions .tar.gz
+- name: Remove file extensions .tar.gz
+  set_fact:
+    modified_filename: "{{ file_name | regex_replace('\\.tar\\.gz$', '') }}"
+
+- debug:
+    var: modified_filename
+
+  # Step 7: Copy node_exporter executable to /user/bin
+- name: Copy node_exporter
+  ansible.builtin.copy:
+    src: /opt/{{ modified_filename }}/node_exporter
+    dest: /usr/bin
+    owner: node_exporter
+    group: node_exporter        
+    remote_src: yes
+    mode: '0755'
+
+  # Step 8: Copy node_exporter.service to remote server
+- name: Copy node_exporter.service to remote server
+  ansible.builtin.copy:
+    src: node_exporter.service
+    dest: /usr/lib/systemd/system/node_exporter.service      
+    remote_src: no
+    mode: '0664'
+
+  # Step 9: Reload systemd daemon
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+  # Step 10: Start node_exporter service
+- name: Start node_exporter service
+  ansible.builtin.systemd:
+    name: node_exporter
+    state: started

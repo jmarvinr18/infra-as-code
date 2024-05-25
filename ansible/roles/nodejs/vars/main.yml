@@ -1,0 +1,4 @@
+---
+# vars file for nodejs
+NODEJS_VERSION: "18"
+RELEASE_DISTRIBUTION: "focal"

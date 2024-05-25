@@ -1,0 +1,26 @@
+---
+# tasks file for apache2
+- name: install apache2 package
+  become: true
+  apt: 
+    name: apache2 
+    state: present
+    update_cache: yes
+    
+- name: install apache2 package
+  become: true
+  shell: a2enmod proxy proxy_http proxy_balancer lbmethod_byrequests
+
+- name: Copy config file to remote server
+  become: true
+  ansible.builtin.copy:
+    src: "{{ SOURCE_PATH }}/{{ item }}"
+    dest: "/etc/apache2/sites-available/{{ item }}"
+    remote_src: no
+  loop: "{{ FILENAME }}"
+
+- name: Enable new site
+  become: true
+  shell: a2ensite {{ item }}
+  loop: "{{ FILENAME }}"
+  notify: "Restart apache2"

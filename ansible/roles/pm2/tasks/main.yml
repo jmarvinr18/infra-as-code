@@ -1,0 +1,21 @@
+---
+# tasks file for pm2
+- name: Install NPM
+  shell: |
+    {{ item }}
+  args:
+    executable: /bin/bash
+    chdir: "{{ PROJECT_DIRECTORY }}"
+  loop: "{{ COMMANDS }}"
+
+
+- name: Install PM2
+  become: true
+  command: npm install pm2 -g 
+  args:
+    chdir: "{{ PROJECT_DIRECTORY }}"
+
+- name: Start PM2
+  command: pm2 start {{ TARGET_FILE }} --name {{ APP_NAME }}
+  args:
+    chdir: "{{ PROJECT_DIRECTORY }}"

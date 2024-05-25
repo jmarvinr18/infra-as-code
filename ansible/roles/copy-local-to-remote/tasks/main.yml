@@ -1,0 +1,11 @@
+---
+# tasks file for copy-local-to-remote
+- name: Copy file or folder to remote server
+  become: true
+  ansible.builtin.copy:
+    src: "{{ SOURCE_PATH }}/{{ item }}"
+    dest: "{{ REMOTE_DESTINATION_PATH }}"
+    owner: "{{ OWNER }}"
+    group: "{{ GROUP }}"    
+    remote_src: no
+  loop: "{{ NAME }}"

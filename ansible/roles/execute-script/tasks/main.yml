@@ -1,0 +1,5 @@
+---
+# tasks file for execute-script
+- name: Execute script
+  become: true
+  shell: "{{ COMMAND }}"

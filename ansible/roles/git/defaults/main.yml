@@ -1,0 +1,7 @@
+---
+# defaults file for git
+BRANCH: "DEV" 
+REPO_URL: "git@github.com:reliasourcing/chrysoberyl.git"
+REPO_NAME: "chrysoberyl"
+DIRECTORY: "/var/www/"
+KEY_PATH: ".ssh/id_rsa"

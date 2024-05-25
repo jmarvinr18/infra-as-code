@@ -1,0 +1,49 @@
+---
+# tasks file for nodejs
+- name: Update apt cache
+  become: true
+  apt:
+    update_cache: yes
+
+- name: Install GPG
+  become: true
+  tags: nodejs, install, setup
+  apt:
+    name: gnupg
+    update_cache: yes
+    state: present
+
+- name: Install the gpg key for nodejs LTS
+  become: true
+  apt_key:
+    url: "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
+    state: present
+
+- name: Install Node.js dependencies
+  become: true
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - curl
+    - software-properties-common
+
+- name: Add NodeSource repository
+  become: true
+  apt_repository:
+    repo: "deb https://deb.nodesource.com/node_{{ NODEJS_VERSION }}.x {{ RELEASE_DISTRIBUTION }} main"
+    state: present
+    update_cache: yes
+    filename: nodesource
+
+- name: Install Node.js
+  become: true
+  apt:
+    name: nodejs
+    state: present
+    
+- name: Install build-essential
+  become: true
+  apt:
+    name: build-essential
+    state: present

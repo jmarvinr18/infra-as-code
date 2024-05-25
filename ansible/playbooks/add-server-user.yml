@@ -1,0 +1,6 @@
+---
+- name: Add New User to Servers
+  hosts: all
+  become: true
+  roles:
+    - user-management

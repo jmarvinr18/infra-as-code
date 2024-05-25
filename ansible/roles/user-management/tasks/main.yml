@@ -1,0 +1,51 @@
+---
+# tasks file for user-management
+- name: Create rsi-admin group
+  group:
+    name: "rsi-admin"
+    state: present
+- name: Create a sudoers.d file for admin
+  ansible.builtin.file:
+    path: "/etc/sudoers.d/admin"
+    state: touch
+    owner: root
+    group: root
+    mode: "0600"  
+- name: Write a sudoers.d file for admin
+  copy:
+    content: |
+      %rsi-admin ALL=(ALL) NOPASSWD: ALL
+    dest: /etc/sudoers.d/admin       
+- name: Create group
+  group:
+    name: "{{ name }}"
+    state: present        
+- name: Add new user to cloud servers
+  ansible.builtin.user:
+    name: "{{ name }}"
+    shell: /bin/bash
+    comment: "{{ description }}"
+    group: "{{ name }}"
+    groups: rsi-admin
+    append: yes        
+
+- name: Create a .ssh directory if it does not exist
+  ansible.builtin.file:
+    path: "/home/{{ name }}/.ssh"
+    state: directory
+    owner: "{{ name }}"
+    group: "{{ name }}"
+    mode: '0700'
+
+- name: Create authorized_keys file
+  ansible.builtin.file:
+    path: "/home/{{ name }}/.ssh/authorized_keys"
+    state: touch
+    owner: "{{ name }}"
+    group: "{{ name }}"    
+    mode: "0600"
+- name: Write public key to authorized_keys file
+  copy:
+    content: |
+      {{ public_key }}
+    dest: /home/{{ name }}/.ssh/authorized_keys

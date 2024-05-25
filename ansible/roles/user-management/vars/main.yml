@@ -1,0 +1,6 @@
+---
+# vars file for user-management
+arch_mapping:  # Map ansible architecture {{ ansible_architecture }} names to Docker's architecture names
+  x86_64: amd64
+  aarch64: arm64
+packer_instance_ip: ""
