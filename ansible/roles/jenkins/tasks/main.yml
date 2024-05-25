@@ -1,0 +1,38 @@
+---
+# tasks file for roles/jenkins
+
+- name: Update and upgrade all packages to the latest version
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+    upgrade: dist
+    cache_valid_time: 3600
+
+- name: Execute command
+  become: true
+  shell: "{{ COMMAND }}"
+    
+- name: Add Jenkins repository key to the system
+  block:
+    - name: somerepo | no apt key
+      ansible.builtin.get_url:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+        dest: /usr/share/keyrings/jenkins-keyring.asc
+
+- name: Add the Jenkins repository
+  ansible.builtin.apt_repository:
+    repo: deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/
+    state: present
+
+
+- name: Update apt cache and install Jenkins
+  ansible.builtin.apt:
+    name: jenkins
+    state: present
+    update_cache: yes
+
+- name: Wait for Jenkins to start
+  wait_for:
+    port: 8080
+    delay: 10
+    timeout: 300
