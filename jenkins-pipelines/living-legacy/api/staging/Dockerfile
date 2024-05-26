@@ -43,8 +43,8 @@ RUN ls -la
 
 RUN pwd
 
-ADD docker/nginx/default.conf /etc/nginx/conf.d
-ADD docker/nginx/fastcgi-php.conf /etc/nginx
+RUN cp docker/nginx/default.conf /etc/nginx/conf.d
+RUN cp docker/nginx/fastcgi-php.conf /etc/nginx
 RUN cp docker/php/php.ini-production /usr/local/etc/php/php.ini-production
 RUN cp docker/php/php.ini-development /usr/local/etc/php/php.ini-development
 RUN cp docker/php/php.ini-development /usr/local/etc/php/php.ini
