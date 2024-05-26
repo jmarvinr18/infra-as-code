@@ -36,19 +36,12 @@ pipeline {
                 }
             }
         }
-        stage('Build Image') {
-            steps { 
-                sendBuildNotification('📣', '#439FE0', 'STARTED', env.JOB_NAME, env.BUILD_NUMBER, 'SIT', env.BUILD_URL)
-                script{
-                    app = docker.build("730335385391.dkr.ecr.ap-southeast-1.amazonaws.com/living-legacy:api", "--build-arg GITHUB_ORG=$GITHUB_ORG --build-arg GITHUB_PAT=$GITHUB_PAT --build-arg GITHUB_REPO=$GITHUB_REPO --build-arg GITHUB_BRANCH=$GITHUB_BRANCH --build-arg GITHUB_USER=$GITHUB_USER --force-rm --no-cache -f $GITHUB_REPO/Dockerfile .")
-                }
-            }
-        }
+
 
         stage('Test Image'){
             steps {
                  script{                 
-                    sh "docker run --rm -d -p $SERVICE_PORT:80 --name $TEST_APP_NAME ${URL_REGISTRY}/$ECR_REPO:api"
+                    sh "docker run --rm -d -p $SERVICE_PORT:8080 --name $TEST_APP_NAME ${URL_REGISTRY}/$ECR_REPO:api"
                     sh 'sleep  2'
                     sh "nc -zv localhost $SERVICE_PORT"
                     sh "docker stop $TEST_APP_NAME"
