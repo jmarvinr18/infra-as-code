@@ -34,7 +34,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN git clone --branch ${GITHUB_BRANCH} https://${GITHUB_USER}:${GITHUB_PAT}@github.com/${GITHUB_ORG}/${GITHUB_REPO}.git /var/www/html
 # https://github.com/LivingLegacyDevTeam/living-legacy-backend.git
-WORKDIR /var/www/html
+WORKDIR /var/www/html/${GITHUB_REPO}
 
 
 COPY php.ini-production /usr/local/etc/php/php.ini-production
@@ -56,9 +56,9 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && php -r "unlink('composer-setup.php');"
 
 #copy our laravel application to html
-COPY --chown=docker:docker . /var/www/html
+COPY --chown=docker:docker . /var/www/html/${GITHUB_REPO}
 
-WORKDIR /var/www/html
+WORKDIR /var/www/html/${GITHUB_REPO}
 
 #update dependencies
 RUN composer update
