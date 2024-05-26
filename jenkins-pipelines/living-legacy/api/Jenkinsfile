@@ -9,6 +9,11 @@ pipeline {
         ECR_REPO = 'living-legacy'
         AWS_ACCOUNT_ID = '730335385391'
         URL_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        GITHUB_ORG = "LivingLegacyDevTeam"
+        GITHUB_PAT = credentials("GITHUB_PAT")
+        GITHUB_REPO = "jenkins-pipelines/living-legacy/api"
+        GITHUB_BRANCH = "main"
+        GITHUB_USER = "LivingLegacyDevTeam"        
     }
     stages {
         // stage('SCM Checkout') {
