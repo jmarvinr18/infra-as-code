@@ -1,0 +1,102 @@
+pipeline {
+    agent any
+
+    // options {
+    //     skipStagesAfterUnstable()
+    // }
+    environment {
+        AWS_REGION = 'ap-southeast-1'
+        ECR_REPO = 'living-legacy'
+        AWS_ACCOUNT_ID = '730335385391'
+        URL_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        GITHUB_ORG = "LivingLegacyDevTeam"
+        GITHUB_PAT = credentials("GITHUB_PAT")
+        GITHUB_REPO = "living-legacy-backend"
+        GITHUB_BRANCH = "staging"
+        GITHUB_USER = "LivingLegacyDevTeam"
+        SERVICE_PORT = 8080
+        TEST_APP_NAME = "test-app"
+        DOCKERFILE_PATH = "jenkins-pipelines/living-legacy/api/staging"
+    }
+    stages {
+
+        stage('Build and Tag Docker Image') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'AWS_CLI_USER', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        // Login to ECR
+                        sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${URL_REGISTRY}"
+
+                        // Build Docker image                        
+                        sh "docker build -t $ECR_REPO:api --build-arg GITHUB_ORG=$GITHUB_ORG --build-arg GITHUB_PAT=$GITHUB_PAT --build-arg GITHUB_REPO=$GITHUB_REPO --build-arg GITHUB_BRANCH=$GITHUB_BRANCH --build-arg GITHUB_USER=$GITHUB_USER --force-rm --progress=plain -f $DOCKERFILE_PATH/Dockerfile ."
+                       
+                        // Tag Docker image
+                        sh "docker tag $ECR_REPO:api ${URL_REGISTRY}/$ECR_REPO:api"
+                    }
+                }
+            }
+        }
+        stage('Build Image') {
+            steps { 
+                sendBuildNotification('📣', '#439FE0', 'STARTED', env.JOB_NAME, env.BUILD_NUMBER, 'SIT', env.BUILD_URL)
+                script{
+                    app = docker.build("730335385391.dkr.ecr.ap-southeast-1.amazonaws.com/living-legacy:api", "--build-arg GITHUB_ORG=$GITHUB_ORG --build-arg GITHUB_PAT=$GITHUB_PAT --build-arg GITHUB_REPO=$GITHUB_REPO --build-arg GITHUB_BRANCH=$GITHUB_BRANCH --build-arg GITHUB_USER=$GITHUB_USER --force-rm --no-cache -f $GITHUB_REPO/Dockerfile .")
+                }
+            }
+        }
+
+        stage('Test Image'){
+            steps {
+                 script{                 
+                    sh "docker run --rm -d -p $SERVICE_PORT:80 --name $TEST_APP_NAME ${URL_REGISTRY}/$ECR_REPO:api"
+                    sh 'sleep  2'
+                    sh "nc -zv localhost $SERVICE_PORT"
+                    sh "docker stop $TEST_APP_NAME"
+                 }                   
+            }
+        }
+
+        stage('Push Image to Registry') {
+            steps {
+                script{
+                    withCredentials([usernamePassword(credentialsId: 'AWS_CLI_USER', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+
+                        // Push Docker image to ECR
+                        sh "docker push ${URL_REGISTRY}/$ECR_REPO:api"
+
+                    }   
+                }
+            }
+        }
+
+    }
+
+    post {
+        success {
+            script {
+                sendBuildNotification('✅', '#36a64f', 'COMPLETED', env.JOB_NAME, env.BUILD_NUMBER, 'SIT', env.BUILD_URL)
+            }
+        }
+        failure {
+            script {
+                sendBuildNotification('❌', '#ff0000', 'FAILED', env.JOB_NAME, env.BUILD_NUMBER, 'SIT', env.BUILD_URL)
+            }
+        }
+        always {
+            script {
+                sh "docker system prune -f"
+            }
+        }
+    }
+
+}
+
+def sendApprovalNotification(color, jobName, buildNumber, environment, buildUrl, tagged) {
+    def message = "🚦 Build *APPROVAL*: Pipeline ${jobName} | \n *Job* # ${buildNumber} | *Environment*: ${environment} | More Info: ${buildUrl} \n 🗣️ ${tagged} "
+    slackSend(channel: 'rsi-builds-approval', color: color, message: message)
+}
+
+def sendBuildNotification(emoji, color, status, jobName, buildNumber, environment, buildUrl) {
+    def message = "${emoji} Build *${status.toUpperCase()}*: Pipeline ${jobName} | \n *Job* # ${buildNumber} | *Environment*: ${environment} | More Info: ${buildUrl}"
+    slackSend(channel: 'rsi-tech-builds', color: color, message: message)
+}

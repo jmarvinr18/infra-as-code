@@ -8,6 +8,7 @@ ARG GITHUB_PAT
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    nginx \
     git \
     curl \
     libpng-dev \
@@ -29,9 +30,12 @@ RUN apt-get update && apt-get install -y \
     && pecl install imagick \ 
     && docker-php-ext-enable imagick
 
-RUN git clone --branch ${GITHUB_BRANCH} https://${GITHUB_USER}:${GITHUB_PAT}@github.com/${GITHUB_ORG}/${GITHUB_REPO}.git /var/www/html
-# https://github.com/LivingLegacyDevTeam/living-legacy-backend.git
+
 WORKDIR /var/www/html
+
+RUN rm *
+
+RUN git clone --branch ${GITHUB_BRANCH} https://${GITHUB_USER}:${GITHUB_PAT}@github.com/${GITHUB_ORG}/${GITHUB_REPO}.git /var/www/html
 
 RUN echo ${GITHUB_REPO}
 
@@ -39,6 +43,8 @@ RUN ls -la
 
 RUN pwd
 
+ADD docker/nginx/default.conf /etc/nginx/conf.d
+ADD docker/nginx/fastcgi-php.conf /etc/nginx
 RUN cp docker/php/php.ini-production /usr/local/etc/php/php.ini-production
 RUN cp docker/php/php.ini-development /usr/local/etc/php/php.ini-development
 RUN cp docker/php/php.ini-development /usr/local/etc/php/php.ini

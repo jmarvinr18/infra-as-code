@@ -6,16 +6,17 @@ pipeline {
     // }
     environment {
         AWS_REGION = 'ap-southeast-1'
-        ECR_REPO = 'living-legacy'
+        ECR_REPO = 'living-legacy-production'
         AWS_ACCOUNT_ID = '730335385391'
         URL_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
         GITHUB_ORG = "LivingLegacyDevTeam"
         GITHUB_PAT = credentials("GITHUB_PAT")
         GITHUB_REPO = "living-legacy-backend"
-        GITHUB_BRANCH = "develop"
+        GITHUB_BRANCH = "main"
         GITHUB_USER = "LivingLegacyDevTeam"
-        SERVICE_PORT = 80
+        SERVICE_PORT = 8080
         TEST_APP_NAME = "test-app"
+        DOCKERFILE_PATH = "jenkins-pipelines/living-legacy/api/production"
     }
     stages {
 
@@ -27,7 +28,7 @@ pipeline {
                         sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${URL_REGISTRY}"
 
                         // Build Docker image                        
-                        sh "docker build -t $ECR_REPO:api --build-arg GITHUB_ORG=$GITHUB_ORG --build-arg GITHUB_PAT=$GITHUB_PAT --build-arg GITHUB_REPO=$GITHUB_REPO --build-arg GITHUB_BRANCH=$GITHUB_BRANCH --build-arg GITHUB_USER=$GITHUB_USER --force-rm --progress=plain -f jenkins-pipelines/living-legacy/api/Dockerfile ."
+                        sh "docker build -t $ECR_REPO:api --build-arg GITHUB_ORG=$GITHUB_ORG --build-arg GITHUB_PAT=$GITHUB_PAT --build-arg GITHUB_REPO=$GITHUB_REPO --build-arg GITHUB_BRANCH=$GITHUB_BRANCH --build-arg GITHUB_USER=$GITHUB_USER --force-rm --progress=plain -f $DOCKERFILE_PATH/Dockerfile ."
                        
                         // Tag Docker image
                         sh "docker tag $ECR_REPO:api ${URL_REGISTRY}/$ECR_REPO:api"
