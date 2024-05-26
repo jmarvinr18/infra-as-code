@@ -1,13 +1,10 @@
-FROM php:8.1-fpm as php_base
+FROM php:8.1-fpm
 
 ARG GITHUB_ORG
 ARG GITHUB_REPO
 ARG GITHUB_BRANCH
 ARG GITHUB_USER
 ARG GITHUB_PAT
-
-# Install system dependencies
-FROM php:8.1-fpm
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -34,7 +31,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN git clone --branch ${GITHUB_BRANCH} https://${GITHUB_USER}:${GITHUB_PAT}@github.com/${GITHUB_ORG}/${GITHUB_REPO}.git /var/www/html
 # https://github.com/LivingLegacyDevTeam/living-legacy-backend.git
-WORKDIR /var/www/html/${GITHUB_REPO}
+WORKDIR /var/www/html
 
 RUN echo ${GITHUB_REPO}
 
@@ -42,9 +39,10 @@ RUN ls -la
 
 RUN pwd
 
-RUN cp php.ini-production /usr/local/etc/php/php.ini-production
-RUN cp php.ini-development /usr/local/etc/php/php.ini-development
-RUN cp /usr/local/etc/php/php.ini-development /usr/local/etc/php/php.ini
+RUN cp docker/php/php.ini-production /usr/local/etc/php/php.ini-production
+RUN cp docker/php/php.ini-development /usr/local/etc/php/php.ini-development
+RUN cp docker/php/php.ini-development /usr/local/etc/php/php.ini
+RUN cp docker/php/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN apt-get update && apt-get install -y libssl-dev
@@ -61,9 +59,9 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && php -r "unlink('composer-setup.php');"
 
 #copy our laravel application to html
-COPY --chown=docker:docker . /var/www/html/${GITHUB_REPO}
+COPY --chown=docker:docker . /var/www/html
 
-WORKDIR /var/www/html/${GITHUB_REPO}
+WORKDIR /var/www/html
 
 #update dependencies
 RUN composer update
@@ -73,3 +71,8 @@ RUN composer install --quiet --optimize-autoloader --no-dev --verbose
 
 #set permission on storage folder
 RUN chmod -R 777 storage
+
+RUN chmod +x docker/entrypoint.sh
+
+# Run the entrypoint file.
+ENTRYPOINT [ "docker/entrypoint.sh" ]
