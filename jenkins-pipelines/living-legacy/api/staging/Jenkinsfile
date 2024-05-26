@@ -41,6 +41,7 @@ pipeline {
         stage('Test Image'){
             steps {
                  script{
+                    sh "docker ps -a"
                     sh "docker run --rm -d -p $SERVICE_PORT:8080 --name $TEST_APP_NAME ${URL_REGISTRY}/$ECR_REPO:api"
                     sh 'sleep  2'
                     sh "nc -zv localhost $SERVICE_PORT"
