@@ -1,9 +1,9 @@
 pipeline {
     agent any
 
-    // options {
-    //     skipStagesAfterUnstable()
-    // }
+    options {
+        skipStagesAfterUnstable()
+    }
     environment {
         AWS_REGION = 'ap-southeast-1'
         ECR_REPO = 'living-legacy'
@@ -68,12 +68,12 @@ pipeline {
     post {
         success {
             script {
-                sendBuildNotification('✅', '#36a64f', 'COMPLETED', env.JOB_NAME, env.BUILD_NUMBER, 'SIT', env.BUILD_URL)
+                sendBuildNotification('✅', '#36a64f', 'COMPLETED', env.JOB_NAME, env.BUILD_NUMBER, 'STAGING', env.BUILD_URL)
             }
         }
         failure {
             script {
-                sendBuildNotification('❌', '#ff0000', 'FAILED', env.JOB_NAME, env.BUILD_NUMBER, 'SIT', env.BUILD_URL)
+                sendBuildNotification('❌', '#ff0000', 'FAILED', env.JOB_NAME, env.BUILD_NUMBER, 'STAGING', env.BUILD_URL)
             }
         }
         always {
@@ -92,5 +92,5 @@ def sendApprovalNotification(color, jobName, buildNumber, environment, buildUrl,
 
 def sendBuildNotification(emoji, color, status, jobName, buildNumber, environment, buildUrl) {
     def message = "${emoji} Build *${status.toUpperCase()}*: Pipeline ${jobName} | \n *Job* # ${buildNumber} | *Environment*: ${environment} | More Info: ${buildUrl}"
-    slackSend(channel: 'rsi-tech-builds', color: color, message: message)
+    slackSend(channel: 'web-app-status', color: color, message: message)
 }
