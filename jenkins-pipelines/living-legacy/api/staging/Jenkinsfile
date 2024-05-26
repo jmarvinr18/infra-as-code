@@ -46,7 +46,6 @@ pipeline {
                     sh 'sleep  2'
                     sh "nc -zv localhost $SERVICE_PORT"
                     sh "docker stop $TEST_APP_NAME"
-                    sh "docker rm $TEST_APP_NAME"  
                  }                   
             }
         }
