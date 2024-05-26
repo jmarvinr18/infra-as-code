@@ -11,11 +11,11 @@ pipeline {
         URL_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
     }
     stages {
-        stage('SCM Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/LivingLegacyDevTeam/living-legacy-backend.git'
-            }
-        }
+        // stage('SCM Checkout') {
+        //     steps {
+        //         git branch: 'main', url: 'https://github.com/LivingLegacyDevTeam/living-legacy-backend.git'
+        //     }
+        // }
         stage('Build and Push Docker Image') {
             steps {
                 script {
@@ -24,7 +24,7 @@ pipeline {
                         sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${URL_REGISTRY}"
 
                         // Build Docker image
-                        sh "docker build -t $ECR_REPO ."
+                        sh "docker build -t $ECR_REPO --build-arg GITHUB_ORG=$GITHUB_ORG --build-arg GITHUB_PAT=$GITHUB_PAT --build-arg GITHUB_REPO=$GITHUB_REPO --build-arg GITHUB_BRANCH=$GITHUB_BRANCH --build-arg GITHUB_USER=$GITHUB_USER --force-rm --no-cache -f $GITHUB_REPO/Dockerfile ."
 
                         // Tag Docker image
                         sh "docker tag $ECR_REPO:latest ${URL_REGISTRY}/$ECR_REPO:latest"
