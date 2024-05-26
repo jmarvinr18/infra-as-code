@@ -36,6 +36,7 @@ RUN git clone --branch ${GITHUB_BRANCH} https://${GITHUB_USER}:${GITHUB_PAT}@git
 # https://github.com/LivingLegacyDevTeam/living-legacy-backend.git
 WORKDIR /var/www/html/${GITHUB_REPO}
 
+RUN pwd
 
 COPY php.ini-production /usr/local/etc/php/php.ini-production
 COPY php.ini-development /usr/local/etc/php/php.ini-development
