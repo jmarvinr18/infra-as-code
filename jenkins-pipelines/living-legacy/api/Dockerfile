@@ -1,4 +1,4 @@
-FROM php:7.4-fpm as php_base
+FROM php:8.1-fpm as php_base
 
 ARG GITHUB_ORG
 ARG GITHUB_REPO
