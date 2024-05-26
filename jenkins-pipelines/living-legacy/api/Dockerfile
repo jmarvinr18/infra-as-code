@@ -36,12 +36,14 @@ RUN git clone --branch ${GITHUB_BRANCH} https://${GITHUB_USER}:${GITHUB_PAT}@git
 # https://github.com/LivingLegacyDevTeam/living-legacy-backend.git
 WORKDIR /var/www/html/${GITHUB_REPO}
 
+RUN echo ${GITHUB_REPO}
+
 RUN ls -la
 
 RUN pwd
 
-COPY php.ini-production /usr/local/etc/php/php.ini-production
-COPY php.ini-development /usr/local/etc/php/php.ini-development
+RUN cp php.ini-production /usr/local/etc/php/php.ini-production
+RUN cp php.ini-development /usr/local/etc/php/php.ini-development
 RUN cp /usr/local/etc/php/php.ini-development /usr/local/etc/php/php.ini
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
