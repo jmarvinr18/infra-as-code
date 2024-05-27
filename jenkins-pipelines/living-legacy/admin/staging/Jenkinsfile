@@ -17,7 +17,7 @@ pipeline {
         GITHUB_USER = "LivingLegacyDevTeam"
         SERVICE_PORT = 3214
         TEST_APP_NAME = "test-app"
-        DOCKERFILE_PATH = "jenkins-pipelines/living-legacy/admin"
+        DOCKERFILE_PATH = "jenkins-pipelines/living-legacy/admin/staging"
     }
     stages {
 
