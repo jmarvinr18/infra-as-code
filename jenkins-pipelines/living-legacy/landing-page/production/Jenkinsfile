@@ -12,7 +12,7 @@ pipeline {
         URL_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
         GITHUB_ORG = "LivingLegacyDevTeam"
         GITHUB_PAT = credentials("GITHUB_PAT")
-        GITHUB_REPO = "living-legacy-backend"
+        GITHUB_REPO = "living-legacy-frontend"
         GITHUB_BRANCH = "main"
         GITHUB_USER = "LivingLegacyDevTeam"
         SERVICE_PORT = 3000
