@@ -30,7 +30,6 @@ RUN npm run build-only
 EXPOSE 3000
 
 RUN cp docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
-RUN rm /var/www/html/index*.html
-RUN cp -r dist/* /var/www/html
+RUN cp -r dist/* /usr/share/nginx/html
 
-# CMD [ "nginx", "-g", "daemon off;" ]
+CMD [ "nginx", "-g", "daemon off;" ]
