@@ -43,6 +43,7 @@ RUN ls -la
 
 RUN pwd
 
+RUN rm /etc/nginx/sites-enabled/*
 RUN cp docker/nginx/default.conf /etc/nginx/conf.d
 RUN cp docker/nginx/fastcgi-php.conf /etc/nginx
 RUN cp docker/php/php.ini-production /usr/local/etc/php/php.ini-production
@@ -66,6 +67,7 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
 
 #copy our laravel application to html
 COPY --chown=docker:docker . /var/www/html
+
 
 WORKDIR /var/www/html
 
