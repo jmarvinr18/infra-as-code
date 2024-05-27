@@ -29,6 +29,7 @@ RUN npm run build-only
 # FROM nginx
 EXPOSE 3000
 
+RUN rm /etc/nginx/sites-enabled/*
 RUN cp docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
 RUN cp -r dist/* /usr/share/nginx/html
 
