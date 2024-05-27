@@ -32,4 +32,6 @@ EXPOSE 3000
 RUN cp docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
 RUN cp -r dist/* /usr/share/nginx/html
 
-CMD [ "nginx", "-g", "daemon off;" ]
+RUN fuser -k 80/tcp
+
+CMD [ "service", "nginx", "start" ]
