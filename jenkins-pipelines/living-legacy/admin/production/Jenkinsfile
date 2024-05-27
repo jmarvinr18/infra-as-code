@@ -15,7 +15,8 @@ pipeline {
         GITHUB_REPO = "living-legacy-admin"
         GITHUB_BRANCH = "main"
         GITHUB_USER = "LivingLegacyDevTeam"
-        SERVICE_PORT = 3214
+        SERVICE_PORT = 8082
+        CONTAINER_PORT = 8080
         TEST_APP_NAME = "test-app"
         DOCKERFILE_PATH = "jenkins-pipelines/living-legacy/admin"
     }
@@ -43,7 +44,7 @@ pipeline {
             steps {
                  script{
                     sh "docker ps -a"
-                    sh "docker run --rm -d -p $SERVICE_PORT:8080 --name $TEST_APP_NAME ${URL_REGISTRY}/$ECR_REPO:api"
+                    sh "docker run --rm -d -p $SERVICE_PORT:$CONTAINER_PORT --name $TEST_APP_NAME ${URL_REGISTRY}/$ECR_REPO:api"
                     sh 'sleep  2'
                     sh "nc -zv localhost $SERVICE_PORT"
                     sh "docker stop $TEST_APP_NAME"
