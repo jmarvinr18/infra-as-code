@@ -15,7 +15,7 @@ pipeline {
         GITHUB_REPO = "living-legacy-backend"
         GITHUB_BRANCH = "staging"
         GITHUB_USER = "LivingLegacyDevTeam"
-        SERVICE_PORT = 3214
+        SERVICE_PORT = 4000
         TEST_APP_NAME = "test-app"
         DOCKERFILE_PATH = "jenkins-pipelines/living-legacy/api/staging"
     }
@@ -43,7 +43,7 @@ pipeline {
             steps {
                  script{
                     sh "docker ps -a"
-                    sh "docker run --rm -d -p $SERVICE_PORT:8080 --name $TEST_APP_NAME ${URL_REGISTRY}/$ECR_REPO:api"
+                    sh "docker run --rm -d -p $SERVICE_PORT:8080 --name $TEST_APP_NAME ${URL_REGISTRY}/$ECR_REPO:$ECR_TAG"
                     sh 'sleep  2'
                     sh "nc -zv localhost $SERVICE_PORT"
                     sh "docker stop $TEST_APP_NAME"
@@ -57,7 +57,7 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'AWS_CLI_USER', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
 
                         // Push Docker image to ECR
-                        sh "docker push ${URL_REGISTRY}/$ECR_REPO:api"
+                        sh "docker push ${URL_REGISTRY}/$ECR_REPO:$ECR_TAG"
 
                     }   
                 }
