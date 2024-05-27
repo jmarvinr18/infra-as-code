@@ -34,4 +34,4 @@ RUN cp -r dist/* /usr/share/nginx/html
 RUN rm /var/www/html/index*.html
 RUN cp -r dist/* /var/www/html
 
-CMD [ "nginx", "-g", "daemon off;" ]
+# CMD [ "nginx", "-g", "daemon off;" ]
