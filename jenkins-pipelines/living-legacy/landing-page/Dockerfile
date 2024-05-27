@@ -27,7 +27,7 @@ RUN npm install
 RUN npm run build-only
 
 # FROM nginx
-EXPOSE 8080
+EXPOSE 3000
 
 RUN cp docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
 RUN cp -r dist/* /usr/share/nginx/html

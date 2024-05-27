@@ -7,7 +7,7 @@ pipeline {
     environment {
         AWS_REGION = 'ap-southeast-1'
         ECR_REPO = 'living-legacy'
-        ECR_TAG = "app"
+        ECR_TAG = "publiclp"
         AWS_ACCOUNT_ID = '730335385391'
         URL_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
         GITHUB_ORG = "LivingLegacyDevTeam"
@@ -15,7 +15,7 @@ pipeline {
         GITHUB_REPO = "living-legacy-backend"
         GITHUB_BRANCH = "staging"
         GITHUB_USER = "LivingLegacyDevTeam"
-        SERVICE_PORT = 3214
+        SERVICE_PORT = 3000
         TEST_APP_NAME = "test-app"
         DOCKERFILE_PATH = "jenkins-pipelines/living-legacy/landing-page"
     }
