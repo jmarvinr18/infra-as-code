@@ -1,4 +1,4 @@
-FROM php:7.4-fpm as php_base
+FROM node:18 as base
 
 ARG GITHUB_ORG
 ARG GITHUB_REPO
@@ -6,65 +6,32 @@ ARG GITHUB_BRANCH
 ARG GITHUB_USER
 ARG GITHUB_PAT
 
-# Install system dependencies
-FROM php:8.1-fpm
+WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libjpeg-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    nodejs \
-    npm \
-    librdkafka-dev \
-    zlib1g-dev \
-    libzip-dev \ 
-    && apt-get install -y libfreetype6-dev libjpeg62-turbo-dev libmcrypt-dev libgd-dev libpng-dev jpegoptim optipng pngquant gifsicle \
-    && docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd \
-    && docker-php-ext-install zip \
-    && apt-get install -y libmagickwand-dev \ 
-    && pecl install imagick \ 
-    && docker-php-ext-enable imagick
+RUN apt-get update && apt-get install -y git nginx
 
-RUN git clone --branch ${GITHUB_BRANCH} https://${GITHUB_USER}:${GITHUB_PAT}@github.com/${GITHUB_ORG}/${GITHUB_REPO}.git /var/www/html
+RUN git clone --branch ${GITHUB_BRANCH} https://${GITHUB_USER}:${GITHUB_PAT}@github.com/${GITHUB_ORG}/${GITHUB_REPO}.git /app
 
-WORKDIR /var/www/html
+RUN echo ${GITHUB_REPO}
 
+RUN ls -la
 
-COPY php.ini-production /usr/local/etc/php/php.ini-production
-COPY php.ini-development /usr/local/etc/php/php.ini-development
-RUN cp /usr/local/etc/php/php.ini-development /usr/local/etc/php/php.ini
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y libssl-dev
-RUN apt-get install -y libcurl4-gnutls-dev
-RUN apt-get install -y libcurl4-openssl-dev
-RUN apt-get install -y libcurl4
+RUN pwd
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd sockets
+# RUN cp package.json ./
 
-# Install composer
-RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
-    && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
-    && php -r "unlink('composer-setup.php');"
+RUN npm install
 
-#copy our laravel application to html
-COPY --chown=docker:docker . /var/www/html
+# CMD [ "npm", "run", "build" ]
 
-WORKDIR /var/www/html
+RUN npm run build
 
-#update dependencies
-RUN composer update
+# FROM nginx
+EXPOSE 8080
 
-#install dependencies with composer
-RUN composer install --quiet --optimize-autoloader --no-dev --verbose
+RUN cp docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
+RUN cp -r dist/* /usr/share/nginx/html
+RUN rm /var/www/html/index*.html
+RUN cp -r dist/* /var/www/html
 
-#set permission on storage folder
-RUN chmod -R 777 storage
+CMD [ "nginx", "-g", "daemon off;" ]
