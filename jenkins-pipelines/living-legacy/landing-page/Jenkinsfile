@@ -18,6 +18,8 @@ pipeline {
         SERVICE_PORT = 3000
         TEST_APP_NAME = "test-app"
         DOCKERFILE_PATH = "jenkins-pipelines/living-legacy/landing-page"
+        ECS_CLUSTER_NAME = "LIVING-LEGACY-CLUSTER-STAGING"
+        ECS_SERVICE_NAME = "living-legacy-staging-service"  
     }
     stages {
 
@@ -64,6 +66,18 @@ pipeline {
             }
         }
 
+        stage('Deploy to AWS ECS') {
+            steps {
+                script{
+                    withCredentials([usernamePassword(credentialsId: 'AWS_CLI_USER', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+
+                        // Push Docker image to ECR
+                        sh "aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment"
+
+                    }   
+                }
+            }
+        }
     }
 
     post {
