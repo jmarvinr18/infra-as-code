@@ -18,7 +18,7 @@ pipeline {
         SERVICE_PORT = 4000
         CONTAINER_PORT = 4000
         TEST_APP_NAME = "test-app"
-        DOCKERFILE_PATH = "jenkins-pipelines/living-legacy/api/staging"
+        DOCKERFILE_PATH = "jenkins-pipelines/living-legacy/api"
         ECS_CLUSTER_NAME = "LIVING-LEGACY-CLUSTER-STAGING"
         ECS_SERVICE_NAME = "living-legacy-staging-service"      
     }
