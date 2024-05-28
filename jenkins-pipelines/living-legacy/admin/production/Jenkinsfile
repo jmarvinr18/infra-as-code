@@ -6,7 +6,7 @@ pipeline {
     }
     environment {
         AWS_REGION = 'ap-southeast-1'
-        ECR_REPO = 'living-legacy-production'
+        ECR_REPO = 'living-legacy'
         ECR_TAG = "admin"
         AWS_ACCOUNT_ID = '730335385391'
         URL_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
