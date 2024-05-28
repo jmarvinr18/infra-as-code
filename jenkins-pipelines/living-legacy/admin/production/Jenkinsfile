@@ -83,12 +83,12 @@ pipeline {
     post {
         success {
             script {
-                sendBuildNotification('✅', '#36a64f', 'COMPLETED', env.JOB_NAME, env.BUILD_NUMBER, 'STAGING', env.BUILD_URL)
+                sendBuildNotification('✅', '#36a64f', 'COMPLETED', env.JOB_NAME, env.BUILD_NUMBER, 'PRODUCTION', env.BUILD_URL)
             }
         }
         failure {
             script {
-                sendBuildNotification('❌', '#ff0000', 'FAILED', env.JOB_NAME, env.BUILD_NUMBER, 'STAGING', env.BUILD_URL)
+                sendBuildNotification('❌', '#ff0000', 'FAILED', env.JOB_NAME, env.BUILD_NUMBER, 'PRODUCTION', env.BUILD_URL)
             }
         }
         always {
