@@ -19,8 +19,8 @@ pipeline {
         CONTAINER_PORT = 3000
         TEST_APP_NAME = "test-app"
         DOCKERFILE_PATH = "jenkins-pipelines/living-legacy/landing-page"
-        ECS_CLUSTER_NAME = "LIVING-LEGACY-CLUSTER-STAGING"
-        ECS_SERVICE_NAME = "living-legacy-staging-service"  
+        ECS_CLUSTER_NAME = "LIVING-LEGACY-CLUSTER-PRODUCTION"
+        ECS_SERVICE_NAME = "living-legacy-production-service"  
     }
     stages {
 

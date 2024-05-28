@@ -19,6 +19,8 @@ pipeline {
         CONTAINER_PORT = 8080
         TEST_APP_NAME = "test-app"
         DOCKERFILE_PATH = "jenkins-pipelines/living-legacy/admin"
+        ECS_CLUSTER_NAME = "LIVING-LEGACY-CLUSTER-PRODUCTION"
+        ECS_SERVICE_NAME = "living-legacy-production-service"        
     }
     stages {
 
@@ -30,8 +32,8 @@ pipeline {
                         sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${URL_REGISTRY}"
 
                         // Build Docker image                        
-                        sh "docker build -t $ECR_REPO:$ECR_TAG --build-arg GITHUB_ORG=$GITHUB_ORG --build-arg GITHUB_PAT=$GITHUB_PAT --build-arg GITHUB_REPO=$GITHUB_REPO --build-arg GITHUB_BRANCH=$GITHUB_BRANCH --build-arg GITHUB_USER=$GITHUB_USER --force-rm --progress=plain -f $DOCKERFILE_PATH/Dockerfile ."
-                       
+                        sh "docker build -t $ECR_REPO:$ECR_TAG --build-arg GITHUB_ORG=$GITHUB_ORG --build-arg GITHUB_PAT=$GITHUB_PAT --build-arg GITHUB_REPO=$GITHUB_REPO --build-arg GITHUB_BRANCH=$GITHUB_BRANCH --build-arg GITHUB_USER=$GITHUB_USER --force-rm --no-cache --progress=plain -f $DOCKERFILE_PATH/Dockerfile ."
+
                         // Tag Docker image
                         sh "docker tag $ECR_REPO:$ECR_TAG ${URL_REGISTRY}/$ECR_REPO:$ECR_TAG"
                     }
@@ -44,7 +46,7 @@ pipeline {
             steps {
                  script{
                     sh "docker ps -a"
-                    sh "docker run --rm -d -p $SERVICE_PORT:$CONTAINER_PORT --name $TEST_APP_NAME ${URL_REGISTRY}/$ECR_REPO:api"
+                    sh "docker run --rm -d -p $SERVICE_PORT:$CONTAINER_PORT --name $TEST_APP_NAME ${URL_REGISTRY}/$ECR_REPO:$ECR_TAG"
                     sh 'sleep  2'
                     sh "nc -zv localhost $SERVICE_PORT"
                     sh "docker stop $TEST_APP_NAME"
@@ -58,13 +60,24 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'AWS_CLI_USER', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
 
                         // Push Docker image to ECR
-                        sh "docker push ${URL_REGISTRY}/$ECR_REPO:api"
+                        sh "docker push ${URL_REGISTRY}/$ECR_REPO:$ECR_TAG"
 
                     }   
                 }
             }
         }
+        stage('Deploy to AWS ECS') {
+            steps {
+                script{
+                    withCredentials([usernamePassword(credentialsId: 'AWS_CLI_USER', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
 
+                        // Push Docker image to ECR
+                        sh "aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment"
+
+                    }   
+                }
+            }
+        }   
     }
 
     post {

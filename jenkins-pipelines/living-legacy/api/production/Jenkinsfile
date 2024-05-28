@@ -1,12 +1,13 @@
 pipeline {
     agent any
 
-    // options {
-    //     skipStagesAfterUnstable()
-    // }
+    options {
+        skipStagesAfterUnstable()
+    }
     environment {
         AWS_REGION = 'ap-southeast-1'
         ECR_REPO = 'living-legacy-production'
+        ECR_TAG = "api"
         AWS_ACCOUNT_ID = '730335385391'
         URL_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
         GITHUB_ORG = "LivingLegacyDevTeam"
@@ -18,6 +19,8 @@ pipeline {
         CONTAINER_PORT = 4000
         TEST_APP_NAME = "test-app"
         DOCKERFILE_PATH = "jenkins-pipelines/living-legacy/api/production"
+        ECS_CLUSTER_NAME = "LIVING-LEGACY-CLUSTER-PRODUCTION"
+        ECS_SERVICE_NAME = "living-legacy-production-service"      
     }
     stages {
 
@@ -29,27 +32,21 @@ pipeline {
                         sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${URL_REGISTRY}"
 
                         // Build Docker image                        
-                        sh "docker build -t $ECR_REPO:api --build-arg GITHUB_ORG=$GITHUB_ORG --build-arg GITHUB_PAT=$GITHUB_PAT --build-arg GITHUB_REPO=$GITHUB_REPO --build-arg GITHUB_BRANCH=$GITHUB_BRANCH --build-arg GITHUB_USER=$GITHUB_USER --force-rm --progress=plain -f $DOCKERFILE_PATH/Dockerfile ."
+                        sh "docker build -t $ECR_REPO:$ECR_TAG --build-arg GITHUB_ORG=$GITHUB_ORG --build-arg GITHUB_PAT=$GITHUB_PAT --build-arg GITHUB_REPO=$GITHUB_REPO --build-arg GITHUB_BRANCH=$GITHUB_BRANCH --build-arg GITHUB_USER=$GITHUB_USER --force-rm --no-cache --progress=plain -f $DOCKERFILE_PATH/Dockerfile ."
                        
                         // Tag Docker image
-                        sh "docker tag $ECR_REPO:api ${URL_REGISTRY}/$ECR_REPO:api"
+                        sh "docker tag $ECR_REPO:$ECR_TAG ${URL_REGISTRY}/$ECR_REPO:$ECR_TAG"
                     }
                 }
             }
         }
-        stage('Build Image') {
-            steps { 
-                sendBuildNotification('📣', '#439FE0', 'STARTED', env.JOB_NAME, env.BUILD_NUMBER, 'SIT', env.BUILD_URL)
-                script{
-                    app = docker.build("730335385391.dkr.ecr.ap-southeast-1.amazonaws.com/living-legacy:api", "--build-arg GITHUB_ORG=$GITHUB_ORG --build-arg GITHUB_PAT=$GITHUB_PAT --build-arg GITHUB_REPO=$GITHUB_REPO --build-arg GITHUB_BRANCH=$GITHUB_BRANCH --build-arg GITHUB_USER=$GITHUB_USER --force-rm --no-cache -f $GITHUB_REPO/Dockerfile .")
-                }
-            }
-        }
+
 
         stage('Test Image'){
             steps {
-                 script{                 
-                    sh "docker run --rm -d -p $SERVICE_PORT:$CONTAINER_PORT --name $TEST_APP_NAME ${URL_REGISTRY}/$ECR_REPO:api"
+                 script{
+                    sh "docker ps -a"
+                    sh "docker run --rm -d -p $SERVICE_PORT:$CONTAINER_PORT --name $TEST_APP_NAME ${URL_REGISTRY}/$ECR_REPO:$ECR_TAG"
                     sh 'sleep  2'
                     sh "nc -zv localhost $SERVICE_PORT"
                     sh "docker stop $TEST_APP_NAME"
@@ -63,24 +60,36 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'AWS_CLI_USER', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
 
                         // Push Docker image to ECR
-                        sh "docker push ${URL_REGISTRY}/$ECR_REPO:api"
+                        sh "docker push ${URL_REGISTRY}/$ECR_REPO:$ECR_TAG"
 
                     }   
                 }
             }
         }
+        stage('Deploy to AWS ECS') {
+            steps {
+                script{
+                    withCredentials([usernamePassword(credentialsId: 'AWS_CLI_USER', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+
+                        // Push Docker image to ECR
+                        sh "aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment"
+
+                    }   
+                }
+            }
+        }        
 
     }
 
     post {
         success {
             script {
-                sendBuildNotification('✅', '#36a64f', 'COMPLETED', env.JOB_NAME, env.BUILD_NUMBER, 'SIT', env.BUILD_URL)
+                sendBuildNotification('✅', '#36a64f', 'COMPLETED', env.JOB_NAME, env.BUILD_NUMBER, 'STAGING', env.BUILD_URL)
             }
         }
         failure {
             script {
-                sendBuildNotification('❌', '#ff0000', 'FAILED', env.JOB_NAME, env.BUILD_NUMBER, 'SIT', env.BUILD_URL)
+                sendBuildNotification('❌', '#ff0000', 'FAILED', env.JOB_NAME, env.BUILD_NUMBER, 'STAGING', env.BUILD_URL)
             }
         }
         always {
@@ -99,5 +108,5 @@ def sendApprovalNotification(color, jobName, buildNumber, environment, buildUrl,
 
 def sendBuildNotification(emoji, color, status, jobName, buildNumber, environment, buildUrl) {
     def message = "${emoji} Build *${status.toUpperCase()}*: Pipeline ${jobName} | \n *Job* # ${buildNumber} | *Environment*: ${environment} | More Info: ${buildUrl}"
-    slackSend(channel: 'rsi-tech-builds', color: color, message: message)
+    slackSend(channel: 'web-app-status', color: color, message: message)
 }

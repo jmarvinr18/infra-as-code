@@ -1,4 +1,4 @@
-FROM node:18 as base
+FROM node:18
 
 ARG GITHUB_ORG
 ARG GITHUB_REPO
@@ -31,6 +31,6 @@ EXPOSE 3000
 
 RUN rm /etc/nginx/sites-enabled/*
 RUN cp docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
-RUN cp -r dist/* /usr/share/nginx/html
+RUN chmod +x docker/entrypoint.sh
 
-CMD [ "nginx", "-g", "daemon off;" ]
+ENTRYPOINT [ "docker/entrypoint.sh" ]
