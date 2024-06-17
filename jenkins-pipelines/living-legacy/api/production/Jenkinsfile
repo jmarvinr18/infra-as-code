@@ -70,7 +70,6 @@ pipeline {
             steps {
                 script{
                     withCredentials([usernamePassword(credentialsId: 'AWS_CLI_USER', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-
                         // Push Docker image to ECR
                         sh "aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment"
 

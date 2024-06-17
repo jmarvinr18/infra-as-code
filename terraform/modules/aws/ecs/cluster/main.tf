@@ -1,324 +1,167 @@
-################################################################################
-# Cluster
-################################################################################
-
-locals {
-  execute_command_configuration = {
-    logging = "OVERRIDE"
-    log_configuration = {
-      cloud_watch_log_group_name = try(aws_cloudwatch_log_group.this[0].name, null)
-    }
-  }
+resource "aws_ecs_cluster" "app_cluster" {
+  name = var.app_cluster_name
 }
 
-resource "aws_ecs_cluster" "this" {
-  count = var.create ? 1 : 0
+resource "aws_default_vpc" "default_vpc" {}
 
-  name = var.cluster_name
+resource "aws_default_subnet" "default_subnet_a" {
+  availability_zone = var.availability_zones[0]
+}
 
-  dynamic "configuration" {
-    for_each = var.create_cloudwatch_log_group ? [var.cluster_configuration] : []
+resource "aws_default_subnet" "default_subnet_b" {
+  availability_zone = var.availability_zones[1]
+}
 
-    content {
-      dynamic "execute_command_configuration" {
-        for_each = try([merge(local.execute_command_configuration, configuration.value.execute_command_configuration)], [{}])
+resource "aws_default_subnet" "default_subnet_c" {
+  availability_zone = var.availability_zones[2]
+}
 
-        content {
-          kms_key_id = try(execute_command_configuration.value.kms_key_id, null)
-          logging    = try(execute_command_configuration.value.logging, "DEFAULT")
 
-          dynamic "log_configuration" {
-            for_each = try([execute_command_configuration.value.log_configuration], [])
-
-            content {
-              cloud_watch_encryption_enabled = try(log_configuration.value.cloud_watch_encryption_enabled, null)
-              cloud_watch_log_group_name     = try(log_configuration.value.cloud_watch_log_group_name, null)
-              s3_bucket_name                 = try(log_configuration.value.s3_bucket_name, null)
-              s3_bucket_encryption_enabled   = try(log_configuration.value.s3_bucket_encryption_enabled, null)
-              s3_key_prefix                  = try(log_configuration.value.s3_key_prefix, null)
+resource "aws_ecs_task_definition" "app_task" {
+  family                   = var.app_task_family
+  container_definitions    = <<DEFINITION
+  [
+            {
+                "name": "spdr88-app",
+                "image": "aslitechnologies/obsidian:app",
+                "repositoryCredentials": {
+                    "credentialsParameter": "arn:aws:secretsmanager:ap-southeast-1:104869295404:secret:DockerHubSecret-abvFY5"
+                },
+                "cpu": 0,
+                "portMappings": [
+                    {
+                        "name": "spdr88-app-8080-tcp",
+                        "containerPort": 8080,
+                        "hostPort": 8080,
+                        "protocol": "tcp",
+                        "appProtocol": "http"
+                    }
+                ],
+                "essential": true,
+                "environment": [],
+                "environmentFiles": [
+                    {
+                        "value": "arn:aws:s3:::spdr88-higher/.env",
+                        "type": "s3"
+                    }
+                ],
+                "mountPoints": [
+                    {
+                        "sourceVolume": "app",
+                        "containerPath": "/var/www/html",
+                        "readOnly": false
+                    }
+                ],
+                "volumesFrom": [],
+                "workingDirectory": "/var/www/html",
+                "ulimits": [],
+                "logConfiguration": {
+                    "logDriver": "awslogs",
+                    "options": {
+                        "awslogs-create-group": "true",
+                        "awslogs-group": "/ecs/spdr88-td",
+                        "awslogs-region": "ap-southeast-1",
+                        "awslogs-stream-prefix": "ecs"
+                    },
+                    "secretOptions": []
+                },
+                "systemControls": []
             }
-          }
-        }
-      }
-    }
-  }
-
-  dynamic "configuration" {
-    for_each = !var.create_cloudwatch_log_group && length(var.cluster_configuration) > 0 ? [var.cluster_configuration] : []
-
-    content {
-      dynamic "execute_command_configuration" {
-        for_each = try([configuration.value.execute_command_configuration], [{}])
-
-        content {
-          kms_key_id = try(execute_command_configuration.value.kms_key_id, null)
-          logging    = try(execute_command_configuration.value.logging, "DEFAULT")
-
-          dynamic "log_configuration" {
-            for_each = try([execute_command_configuration.value.log_configuration], [])
-
-            content {
-              cloud_watch_encryption_enabled = try(log_configuration.value.cloud_watch_encryption_enabled, null)
-              cloud_watch_log_group_name     = try(log_configuration.value.cloud_watch_log_group_name, null)
-              s3_bucket_name                 = try(log_configuration.value.s3_bucket_name, null)
-              s3_bucket_encryption_enabled   = try(log_configuration.value.s3_bucket_encryption_enabled, null)
-              s3_key_prefix                  = try(log_configuration.value.s3_key_prefix, null)
-            }
-          }
-        }
-      }
-    }
-  }
-
-  dynamic "service_connect_defaults" {
-    for_each = length(var.cluster_service_connect_defaults) > 0 ? [var.cluster_service_connect_defaults] : []
-
-    content {
-      namespace = service_connect_defaults.value.namespace
-    }
-  }
-
-  dynamic "setting" {
-    for_each = flatten([var.cluster_settings])
-
-    content {
-      name  = setting.value.name
-      value = setting.value.value
-    }
-  }
-
-  tags = var.tags
-}
-
-################################################################################
-# CloudWatch Log Group
-################################################################################
-resource "aws_cloudwatch_log_group" "this" {
-  count = var.create && var.create_cloudwatch_log_group ? 1 : 0
-
-  name              = try(coalesce(var.cloudwatch_log_group_name, "/aws/ecs/${var.cluster_name}"), "")
-  retention_in_days = var.cloudwatch_log_group_retention_in_days
-  kms_key_id        = var.cloudwatch_log_group_kms_key_id
-
-  tags = merge(var.tags, var.cloudwatch_log_group_tags)
-}
-
-################################################################################
-# Cluster Capacity Providers
-################################################################################
-
-locals {
-  default_capacity_providers = merge(
-    { for k, v in var.fargate_capacity_providers : k => v if var.default_capacity_provider_use_fargate },
-    { for k, v in var.autoscaling_capacity_providers : k => v if !var.default_capacity_provider_use_fargate }
-  )
-}
-
-resource "aws_ecs_cluster_capacity_providers" "this" {
-  count = var.create && length(merge(var.fargate_capacity_providers, var.autoscaling_capacity_providers)) > 0 ? 1 : 0
-
-  cluster_name = aws_ecs_cluster.this[0].name
-  capacity_providers = distinct(concat(
-    [for k, v in var.fargate_capacity_providers : try(v.name, k)],
-    [for k, v in var.autoscaling_capacity_providers : try(v.name, k)]
-  ))
-
-  # https://docs.aws.amazon.com/AmazonECS/latest/developerguide/cluster-capacity-providers.html#capacity-providers-considerations
-  dynamic "default_capacity_provider_strategy" {
-    for_each = local.default_capacity_providers
-    iterator = strategy
-
-    content {
-      capacity_provider = try(strategy.value.name, strategy.key)
-      base              = try(strategy.value.default_capacity_provider_strategy.base, null)
-      weight            = try(strategy.value.default_capacity_provider_strategy.weight, null)
-    }
-  }
-
-  depends_on = [
-    aws_ecs_capacity_provider.this
   ]
+  DEFINITION
+  requires_compatibilities = ["EC2"]
+  network_mode             = "bridge"
+  memory                   = 512
+  cpu                      = 256
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+
 }
 
-################################################################################
-# Capacity Provider - Autoscaling Group(s)
-################################################################################
+resource "aws_iam_role" "ecs_task_execution_role" {
+  name               = var.ecs_task_execution_role_name
+  assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
+}
 
-resource "aws_ecs_capacity_provider" "this" {
-  for_each = { for k, v in var.autoscaling_capacity_providers : k => v if var.create }
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
+  role       = aws_iam_role.ecs_task_execution_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
 
-  name = try(each.value.name, each.key)
+resource "aws_alb" "application_load_balancer" {
+  name               = var.application_load_balancer_name
+  load_balancer_type = "application"
+  subnets = [
+    "${aws_default_subnet.default_subnet_a.id}",
+    "${aws_default_subnet.default_subnet_b.id}",
+    "${aws_default_subnet.default_subnet_c.id}",
+  ]
 
-  auto_scaling_group_provider {
-    auto_scaling_group_arn = each.value.auto_scaling_group_arn
-    # When you use managed termination protection, you must also use managed scaling otherwise managed termination protection won't work
-    managed_termination_protection = length(try([each.value.managed_scaling], [])) == 0 ? "DISABLED" : try(each.value.managed_termination_protection, null)
+  security_groups = ["${aws_security_group.load_balancer_security_group.id}"]
+}
 
-    dynamic "managed_scaling" {
-      for_each = try([each.value.managed_scaling], [])
-
-      content {
-        instance_warmup_period    = try(managed_scaling.value.instance_warmup_period, null)
-        maximum_scaling_step_size = try(managed_scaling.value.maximum_scaling_step_size, null)
-        minimum_scaling_step_size = try(managed_scaling.value.minimum_scaling_step_size, null)
-        status                    = try(managed_scaling.value.status, null)
-        target_capacity           = try(managed_scaling.value.target_capacity, null)
-      }
-    }
+resource "aws_security_group" "load_balancer_security_group" {
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
-
-  tags = merge(var.tags, try(each.value.tags, {}))
-}
-
-################################################################################
-# Task Execution - IAM Role
-# https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html
-################################################################################
-
-locals {
-  task_exec_iam_role_name = try(coalesce(var.task_exec_iam_role_name, var.cluster_name), "")
-
-  create_task_exec_iam_role = var.create && var.create_task_exec_iam_role
-  create_task_exec_policy   = local.create_task_exec_iam_role && var.create_task_exec_policy
-}
-
-data "aws_iam_policy_document" "task_exec_assume" {
-  count = local.create_task_exec_iam_role ? 1 : 0
-
-  statement {
-    sid     = "ECSTaskExecutionAssumeRole"
-    actions = ["sts:AssumeRole"]
-
-    principals {
-      type        = "Service"
-      identifiers = ["ecs-tasks.amazonaws.com"]
-    }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
-resource "aws_iam_role" "task_exec" {
-  count = local.create_task_exec_iam_role ? 1 : 0
-
-  name        = var.task_exec_iam_role_use_name_prefix ? null : local.task_exec_iam_role_name
-  name_prefix = var.task_exec_iam_role_use_name_prefix ? "${local.task_exec_iam_role_name}-" : null
-  path        = var.task_exec_iam_role_path
-  description = coalesce(var.task_exec_iam_role_description, "Task execution role for ${var.cluster_name}")
-
-  assume_role_policy    = data.aws_iam_policy_document.task_exec_assume[0].json
-  permissions_boundary  = var.task_exec_iam_role_permissions_boundary
-  force_detach_policies = true
-
-  tags = merge(var.tags, var.task_exec_iam_role_tags)
+resource "aws_lb_target_group" "target_group" {
+  name        = var.target_group_name
+  port        = var.container_port
+  protocol    = "HTTP"
+  target_type = "instance"
+  vpc_id      = aws_default_vpc.default_vpc.id
 }
 
-resource "aws_iam_role_policy_attachment" "task_exec_additional" {
-  for_each = { for k, v in var.task_exec_iam_role_policies : k => v if local.create_task_exec_iam_role }
-
-  role       = aws_iam_role.task_exec[0].name
-  policy_arn = each.value
-}
-
-data "aws_iam_policy_document" "task_exec" {
-  count = local.create_task_exec_policy ? 1 : 0
-
-  # Pulled from AmazonECSTaskExecutionRolePolicy
-  statement {
-    sid = "Logs"
-    actions = [
-      "logs:CreateLogStream",
-      "logs:PutLogEvents",
-    ]
-    resources = ["*"]
-  }
-
-  # Pulled from AmazonECSTaskExecutionRolePolicy
-  statement {
-    sid = "ECR"
-    actions = [
-      "ecr:GetAuthorizationToken",
-      "ecr:BatchCheckLayerAvailability",
-      "ecr:GetDownloadUrlForLayer",
-      "ecr:BatchGetImage",
-    ]
-    resources = ["*"]
-  }
-
-  dynamic "statement" {
-    for_each = length(var.task_exec_ssm_param_arns) > 0 ? [1] : []
-
-    content {
-      sid       = "GetSSMParams"
-      actions   = ["ssm:GetParameters"]
-      resources = var.task_exec_ssm_param_arns
-    }
-  }
-
-  dynamic "statement" {
-    for_each = length(var.task_exec_secret_arns) > 0 ? [1] : []
-
-    content {
-      sid       = "GetSecrets"
-      actions   = ["secretsmanager:GetSecretValue"]
-      resources = var.task_exec_secret_arns
-    }
-  }
-
-  dynamic "statement" {
-    for_each = var.task_exec_iam_statements
-
-    content {
-      sid           = try(statement.value.sid, null)
-      actions       = try(statement.value.actions, null)
-      not_actions   = try(statement.value.not_actions, null)
-      effect        = try(statement.value.effect, null)
-      resources     = try(statement.value.resources, null)
-      not_resources = try(statement.value.not_resources, null)
-
-      dynamic "principals" {
-        for_each = try(statement.value.principals, [])
-
-        content {
-          type        = principals.value.type
-          identifiers = principals.value.identifiers
-        }
-      }
-
-      dynamic "not_principals" {
-        for_each = try(statement.value.not_principals, [])
-
-        content {
-          type        = not_principals.value.type
-          identifiers = not_principals.value.identifiers
-        }
-      }
-
-      dynamic "condition" {
-        for_each = try(statement.value.conditions, [])
-
-        content {
-          test     = condition.value.test
-          values   = condition.value.values
-          variable = condition.value.variable
-        }
-      }
-    }
+resource "aws_lb_listener" "listener" {
+  load_balancer_arn = aws_alb.application_load_balancer.arn
+  port              = "80"
+  protocol          = "HTTP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.target_group.arn
   }
 }
 
-resource "aws_iam_policy" "task_exec" {
-  count = local.create_task_exec_policy ? 1 : 0
+resource "aws_ecs_service" "app_service_name" {
+  name            = var.app_service_name
+  cluster         = aws_ecs_cluster.app_cluster.id
+  task_definition = aws_ecs_task_definition.app_task.arn
+  launch_type     = "EC2"
+  desired_count   = 1
 
-  name        = var.task_exec_iam_role_use_name_prefix ? null : local.task_exec_iam_role_name
-  name_prefix = var.task_exec_iam_role_use_name_prefix ? "${local.task_exec_iam_role_name}-" : null
-  description = coalesce(var.task_exec_iam_role_description, "Task execution role IAM policy")
-  policy      = data.aws_iam_policy_document.task_exec[0].json
+  load_balancer {
+    target_group_arn = aws_lb_target_group.target_group.arn
+    container_name   = aws_ecs_task_definition.app_task.family
+    container_port   = var.container_port
+  }
 
-  tags = merge(var.tags, var.task_exec_iam_role_tags)
+  # network_configuration {
+  #   subnets          = ["${aws_default_subnet.default_subnet_a.id}", "${aws_default_subnet.default_subnet_b.id}", "${aws_default_subnet.default_subnet_c.id}"]
+  #   assign_public_ip = true
+  #   security_groups  = ["${aws_security_group.service_security_group.id}"]
+  # }
 }
-
-resource "aws_iam_role_policy_attachment" "task_exec" {
-  count = local.create_task_exec_policy ? 1 : 0
-
-  role       = aws_iam_role.task_exec[0].name
-  policy_arn = aws_iam_policy.task_exec[0].arn
+resource "aws_security_group" "service_security_group" {
+  ingress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = ["${aws_security_group.load_balancer_security_group.id}"]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
