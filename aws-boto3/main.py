@@ -1,4 +1,5 @@
 from flask import Flask, request
+from flask_smorest import abort
 import boto3
 import json
 app = Flask(__name__)
@@ -62,5 +63,5 @@ def stop_instance():
 
 
 def start_session():
-    return boto3.session.Session(profile_name="aws-rsi-lower")
+    return boto3.session.Session(profile_name="default")
 

@@ -1,2 +1,2 @@
-FLASK_APP=app
-FLASK_DEBUG=development
+FLASK_APP=main
+FLASK_DEBUG=1
