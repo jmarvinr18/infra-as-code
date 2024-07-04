@@ -23,8 +23,8 @@ def describe_instances():
     session = start_session()
 
     ec2 = session.client('ec2')
-
-    response = ec2.describe_instances()    
+    response = ec2.describe_instances()
+    
     return response["Reservations"][0], 201
 
 

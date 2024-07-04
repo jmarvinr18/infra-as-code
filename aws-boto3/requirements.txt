@@ -3,3 +3,4 @@ flask-smorest
 python-dotenv
 boto3
 awscli
+db-sqlite3
