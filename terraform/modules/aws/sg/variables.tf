@@ -11,6 +11,20 @@ variable "ingress_rules" {
         cidr_blocks = list(string)
         description = string
     }))
+    default = [{
+        from_port   = 80
+        to_port     = 80
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+        description = ""
+    },
+    {
+        from_port   = 443
+        to_port     = 443
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+        description = ""
+    }]     
 }
 
 variable "egress_rules" {
@@ -33,4 +47,7 @@ variable "egress_rules" {
 
 variable "tags" {
   type = map(string)
+  default = {
+    "name" = ""
+  }
 }

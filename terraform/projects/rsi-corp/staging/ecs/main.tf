@@ -31,3 +31,22 @@ module "rsi-sg" {
     "Created-by"  = "jmarvinr"
   }
 }
+
+data "local_file" "policy" {
+  filename = "./policy.json"
+}
+data "local_file" "inline-policy" {
+  filename = "./inline-policy.json"
+}
+
+module "my-role" {
+    source = "../../../../modules/aws/iam/role"
+    role_name = "ECS-ROLE"
+    policy = jsondecode(data.local_file.policy.content)
+
+    inline_policy_name = "name"
+
+    inline_policy = jsondecode(data.local_file.inline-policy.content)
+
+
+}
