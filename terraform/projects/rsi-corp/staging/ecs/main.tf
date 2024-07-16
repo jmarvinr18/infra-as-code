@@ -48,5 +48,4 @@ module "my-role" {
 
     inline_policy = jsondecode(data.local_file.inline-policy.content)
 
-
 }
