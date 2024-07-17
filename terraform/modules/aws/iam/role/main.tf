@@ -1,14 +1,24 @@
-resource "aws_iam_role" "role_name" {
+
+resource "aws_iam_role" "this" {
   name = var.role_name
 
-  # Terraform's "jsonencode" function converts a
-  # Terraform expression result to valid JSON syntax.
-  assume_role_policy = jsonencode(var.policy)
+  assume_role_policy = file(var.assume_role_policy)
 
-  inline_policy {
-    name   = var.inline_policy_name
-    policy = jsonencode(var.inline_policy)
+  dynamic "inline_policy" {
+    for_each = [for rule in var.inline_policy : rule if rule.name != ""]
+
+    content {
+        name   = inline_policy.value.name
+        policy = file(inline_policy.value.file)
+    }
   }
 
   tags = var.tags
 }
+
+resource "aws_iam_role_policy_attachment" "this" {
+  count      = var.policy_arn != "" ? 1 : 0
+  role       = aws_iam_role.this.name
+  policy_arn = var.policy_arn
+}
+

@@ -1,5 +1,6 @@
 module "sg_module" {
   source = "../../../../../modules/aws/sg"
+  security_group_name = ""
 }
 
 resource "aws_instance" "web" {

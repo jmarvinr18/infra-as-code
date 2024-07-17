@@ -2,12 +2,32 @@ variable "role_name" {
   type = string
 }
 
-variable "inline_policy_name" {
+variable "role" {
+  type = string
+  default = ""
+}
+
+variable "policy_arn" {
+  type = string
+  default = ""
+}
+
+
+variable "inline_policy" {
+  type = list(object({
+      name = string
+      file = string
+  }))
+
+  default = [{
+      name = ""
+      file = ""    
+  }]
+}
+
+variable "assume_role_policy" {
   type = string
 }
-variable "inline_policy" {}
-
-variable "policy" {}
 
 variable "tags" {
   type = map(string)
