@@ -3,9 +3,11 @@ variable "app_task_family" {
   default = "service"
 }
 
-variable "task_definition" {}
+variable "container_definitions" {
+  type = string
+}
 
-variable "ecs_task_execution_role_arn" {
+variable "execution_role_arn" {
   type = string
 }
 
