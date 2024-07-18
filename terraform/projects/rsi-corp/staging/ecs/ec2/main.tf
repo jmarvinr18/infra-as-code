@@ -18,6 +18,7 @@ module "ec2" {
   amis                   = var.amis
   subnet_id              = var.subnet_id
   private_key            = "${var.key_path}/${var.private_key}"
+  iam_instance_profile   = var.iam_instance_profile
 }
 
 

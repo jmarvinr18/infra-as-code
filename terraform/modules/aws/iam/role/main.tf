@@ -1,3 +1,8 @@
+resource "aws_iam_instance_profile" "test_profile" {
+  name = var.role_name
+  role = aws_iam_role.this.name
+}
+
 resource "aws_iam_role" "this" {
   name = var.role_name
 

@@ -5,6 +5,7 @@ resource "aws_instance" "this" {
   availability_zone = var.zone
   key_name          = var.key_pair
   subnet_id         = var.subnet_id
+  iam_instance_profile = var.iam_instance_profile
 
   vpc_security_group_ids = var.vpc_security_group_ids
 

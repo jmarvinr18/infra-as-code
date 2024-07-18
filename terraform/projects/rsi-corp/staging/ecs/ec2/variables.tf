@@ -23,3 +23,6 @@ variable "private_key" {
 variable "user" {
   type = string
 }
+variable "iam_instance_profile" {
+  type = string
+}

@@ -66,7 +66,6 @@ module "ECSRole" {
 
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole"
   role = module.ECSRole.name
-
 }
 
 module "ECSInstanceRole" {
@@ -74,6 +73,7 @@ module "ECSInstanceRole" {
   source = "../../../../../modules/aws/iam/role"
   assume_role_policy = var.assume_role_policy
   role_name = "ECSInstanceRole"
+
 
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
   role = module.ECSRole.name
