@@ -1,0 +1,7 @@
+---
+- name: Provisioning the server requirements
+  hosts: all
+  become: true
+  roles:
+  ## Execute build and deploy script
+    - role: ~/Documents/reliasourcing/devops/IaC/andesine/roles/docker

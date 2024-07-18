@@ -2,7 +2,6 @@ variable "key_name" {
   type = string
 }
 
-variable "KEY_PATH" {
+variable "key_path" {
   type = string
-  default = "~/Documents/personal/devops/infra-as-code/terraform/.ssh"
 }

@@ -1,32 +1,34 @@
-variable "REGION" {
+
+variable "key_pair" {
+  type = string
+}
+variable "region" {
   default = "ap-southeast-1"
 }
 
-variable "INSTANCE_TYPE" {
+variable "instance_type" {
   default = "t3.medium"
 }
 
-variable "ZONE1" {
+variable "zone" {
+  type = string
   default = "ap-southeast-1a"
 }
 
-variable "AMIS" {
+variable "amis" {
   type = string
-  default = "ami-0be48b687295f8bd6"
-}
-variable "USER" {
-  default = "ubuntu"
 }
 
-variable "VPC_ID" {
+variable "vpc_id" {
   default = "vpc-082947f177e90b38c"
 }
 
-variable "SUBNET_ID" {
+variable "subnet_id" {
+  type = string
   default = "subnet-00bb21ffc18c51291"
 }
 
-variable "KEY_PATH" {
+variable "key_path" {
   default = "~/Documents/personal/devops/infra-as-code/terraform/.ssh"
 }
 
@@ -38,4 +40,17 @@ variable "tags" {
     "Release"     = "latest"
     "Created-by"  = "packer-jmarvinr"
   }
+}
+
+variable "user" {
+  type = string
+  default = "ubuntu"
+}
+
+variable "private_key" {
+  type = string
+}
+
+variable "vpc_security_group_ids" {
+  type = list(string)
 }

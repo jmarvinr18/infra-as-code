@@ -7,4 +7,9 @@ resource "aws_ecs_task_definition" "this" {
   memory                   = var.memory
   cpu                      = var.cpu
   execution_role_arn       = var.execution_role_arn
+
+  volume {
+    name      = "service-storage"
+    host_path = "/ecs/service-storage"
+  }
 }
