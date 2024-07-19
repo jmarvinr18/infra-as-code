@@ -4,7 +4,7 @@ resource "aws_ecs_service" "this" {
   task_definition = var.aws_ecs_task_definition_arn
   desired_count   = var.desired_count
   iam_role        = var.iam_role_arn
-  depends_on      = var.depends_on
+  # depends_on      = var.depends_on
   scheduling_strategy = var.scheduling_strategy
   force_new_deployment = var.force_new_deployment
 
@@ -15,7 +15,7 @@ resource "aws_ecs_service" "this" {
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.foo.arn
+    target_group_arn = var.target_group_arn
     container_name   = "mongo"
     container_port   = 8080
   }

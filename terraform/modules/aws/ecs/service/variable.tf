@@ -19,10 +19,10 @@ variable "iam_role_arn" {
   type        = string
 }
 
-variable "depends_on" {
-  type        = list(string)
-  default = []
-}
+# variable "depends_on" {
+#   type        = list(string)
+#   default = []
+# }
 variable "scheduling_strategy" {
   type        = string
   default = "DAEMON"
@@ -37,6 +37,10 @@ variable "ordered_placement_strategy" {
     "type" = "binpack"
     "field" = "cpu"
   }
+}
+
+variable "target_group_arn" {
+  type = string
 }
 
 
