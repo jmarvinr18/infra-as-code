@@ -7,3 +7,10 @@ subnet_id              = "subnet-0128ddff7378cb2e5"
 private_key            = "provisioner-key"
 user                   = "ubuntu"
 iam_instance_profile   = "ECSInstanceRole"
+
+tags = {
+  "Name"        = "ECS-AGENT-RSI"
+  "Environment" = "develop"
+  "Release"     = "latest"
+  "Created-by"  = "terraform-jmr"
+}

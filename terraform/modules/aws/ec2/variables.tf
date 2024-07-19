@@ -34,12 +34,6 @@ variable "key_path" {
 
 variable "tags" {
   type = map(string)
-  default = {
-    "Name"        = "jenkins"
-    "Environment" = "develop"
-    "Release"     = "latest"
-    "Created-by"  = "packer-jmarvinr"
-  }
 }
 
 variable "user" {

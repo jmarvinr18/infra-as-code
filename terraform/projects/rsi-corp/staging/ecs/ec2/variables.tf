@@ -26,3 +26,7 @@ variable "user" {
 variable "iam_instance_profile" {
   type = string
 }
+
+variable "tags" {
+  type = map(string)
+}
