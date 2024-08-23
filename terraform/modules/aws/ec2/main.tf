@@ -6,6 +6,8 @@ resource "aws_instance" "this" {
   key_name          = var.key_pair
   subnet_id         = var.subnet_id
   iam_instance_profile = var.iam_instance_profile
+  security_groups = var.security_groups
+  associate_public_ip_address = true
 
   vpc_security_group_ids = var.vpc_security_group_ids
 

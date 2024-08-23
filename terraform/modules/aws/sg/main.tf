@@ -1,6 +1,7 @@
 resource "aws_security_group" "ec2_sg" {
   name = var.security_group_name
   tags = var.tags
+  vpc_id = var.vpc_id
 }
 
 resource "aws_security_group_rule" "ingress" {

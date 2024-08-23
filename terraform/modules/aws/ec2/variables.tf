@@ -19,13 +19,9 @@ variable "amis" {
   type = string
 }
 
-variable "vpc_id" {
-  default = "vpc-082947f177e90b38c"
-}
 
 variable "subnet_id" {
   type = string
-  default = "subnet-00bb21ffc18c51291"
 }
 
 variable "key_path" {
@@ -47,6 +43,12 @@ variable "private_key" {
 
 variable "vpc_security_group_ids" {
   type = list(string)
+  default = []
+}
+
+variable "security_groups" {
+  type = list(string)
+  default = []  
 }
 
 variable "iam_instance_profile" {

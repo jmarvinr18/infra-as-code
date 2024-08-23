@@ -2,6 +2,10 @@ variable "security_group_name" {
   type = string
 }
 
+variable "vpc_id" {
+  type = string
+}
+
 variable "ingress_rules" {
     description = "List of ingress rules for the security group"
     type = list(object({

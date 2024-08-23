@@ -1,0 +1,14 @@
+---
+- name: Provisioning the server requirements
+  hosts: all
+  become: true
+  vars:
+    apache_config_files:
+      - "site.conf"  
+  roles:
+  ## Execute build and deploy script
+    - role: ~/Documents/personal/devops/infra-as-code/ansible/roles/docker
+    - role: ~/Documents/personal/devops/infra-as-code/ansible/roles/apache2
+      vars:
+        SOURCE_PATH: "~/Documents/personal/devops/infra-as-code/terraform/projects/toureast/staging/ec2/assets/apache2"
+        FILENAME: "{{ apache_config_files }}"    
