@@ -1,0 +1,114 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prd-ingress
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip 
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-southeast-1:905418407535:certificate/63f55264-a621-4353-a843-19ee2198312b
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/ssl-policy: 'ELBSecurityPolicy-TLS13-1-2-2021-06'
+spec:
+  ingressClassName: alb
+  rules:
+    - host: xpg.rslot.ph
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: prd-kunzite-api-svc
+                port:
+                  number: 80
+    - host: ids.rslot.ph
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: prd-inderite-api-svc
+                port:
+                  number: 80
+    - host: geo.rslot.ph
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: prd-rhodonite-api-svc
+                port:
+                  number: 80
+    - host: wsc.rslot.ph
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: prd-creedite-api-svc
+                port:
+                  number: 80                  
+    - host: pay.rslot.ph
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: prd-jasper-api-svc
+                port:
+                  number: 80
+    - host: affiliate.rslot.ph
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: prd-amethyst-api-svc
+                port:
+                  number: 80
+    - host: scc.rslot.ph
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: prd-sardonyx-api-svc
+                port:
+                  number: 80
+    - host: rslot.ph
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: prd-spinel-web-svc
+                port:
+                  number: 80
+    - host: admin.rslot.ph
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: prd-algodonite-admin-web-svc
+                port:
+                  number: 80
+    - host: agent.rslot.ph
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: prd-algodonite-agent-web-svc
+                port:
+                  number: 80

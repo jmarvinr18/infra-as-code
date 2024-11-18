@@ -1,0 +1,52 @@
+** terraform
+terraform -chdir=provider/aws/tier/env/terraform init
+terraform -chdir=provider/aws/tier/env/terraform plan
+terraform -chdir=provider/aws/tier/env/terraform apply -auto-approve
+terraform -chdir=provider/aws/tier/env/terraform destroy -auto-approve
+
+** ecr
+terraform -chdir=provider/aws/tier/env/ecr init
+terraform -chdir=provider/aws/tier/env/ecr apply -auto-approve
+terraform -chdir=provider/aws/tier/env/ecr destroy -auto-approve
+
+** vpc
+terraform -chdir=provider/aws/tier/env/vpc init
+terraform -chdir=provider/aws/tier/env/vpc apply -auto-approve
+terraform -chdir=provider/aws/tier/env/vpc destroy -auto-approve
+
+** eks
+terraform -chdir=provider/aws/tier/env/eks init
+terraform -chdir=provider/aws/tier/env/eks apply -auto-approve
+terraform -chdir=provider/aws/tier/env/eks destroy -auto-approve
+
+** aws-auth
+terraform -chdir=provider/aws/tier/env/aws-auth init
+terraform -chdir=provider/aws/tier/env/aws-auth import kubernetes_config_map.aws-auth kube-system/aws-auth
+terraform -chdir=provider/aws/tier/env/aws-auth state rm module.aws-auth-config-map.data.kubernetes_config_map.aws-auth
+terraform -chdir=provider/aws/tier/env/aws-auth state list
+terraform -chdir=provider/aws/tier/env/aws-auth apply -auto-approve
+note: never ever try to destroy this (it will destroy the aws-auth, you'll never go back!)
+note: removing resource from tf state,
+List all state: terraform state list
+Remove desired resource from state: terraform state rm <name>
+verify via: kubectl edit -n kube-system configmap/aws-auth
+
+** sops
+terraform -chdir=provider/aws/tier/env/services/sops init
+terraform -chdir=provider/aws/tier/env/services/sops apply -auto-approve
+terraform -chdir=provider/aws/tier/env/services/sops destroy -auto-approve
+
+** sshkey
+terraform -chdir=provider/aws/tier/env/services/sshkey init
+terraform -chdir=provider/aws/tier/env/services/sshkey apply -auto-approve
+terraform -chdir=provider/aws/tier/env/services/sshkey destroy -auto-approve
+
+** users
+terraform -chdir=provider/aws/tier/env/users init
+terraform -chdir=provider/aws/tier/env/users apply -auto-approve
+terraform -chdir=provider/aws/tier/env/users destroy -auto-approve
+
+** mongodb
+terraform -chdir=provider/aws/tier/env/mongodb init
+terraform -chdir=provider/aws/tier/env/mongodb apply -auto-approve
+terraform -chdir=provider/aws/tier/env/mongodb destroy -auto-approve

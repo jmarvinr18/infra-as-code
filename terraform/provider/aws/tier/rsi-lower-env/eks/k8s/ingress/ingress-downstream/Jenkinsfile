@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+    options {
+        skipStagesAfterUnstable()
+    }
+    environment {
+        HOME = '.'
+    }
+    parameters {
+        string(defaultValue: "", description: 'domain name parameter', name: 'DOMAIN_NAME')
+    }
+    stages {
+
+        stage('K8s Deploy Ingress') {
+            steps {
+                echo "${params.Terraform_Action}"
+                withAWS(credentials: 'rsi-lower', region: 'ap-southeast-1') {
+                    script {
+                        sh 'aws eks update-kubeconfig --region ap-southeast-1 --name lower-rsi-infra'
+                        sh 'kubectl apply -f provider/aws/tier/rsi-lower-env/eks/k8s/ingress/dta-ingress.yaml'
+                        sh 'sleep 5'
+                    }
+                }
+            }
+        }
+
+        stage('Creating/Updating DNS Records') {
+            steps {
+                withAWS(credentials: 'rsi-lower', region: 'ap-southeast-1') {
+                    dir('provider/aws/tier/rsi-lower-env/eks/k8s/ingress') {
+                        script {
+                            sh "chmod +x get_elb.sh"
+                            sh "chmod +x cloudflare_dns.sh"
+                            sh 'aws eks update-kubeconfig --region ap-southeast-1 --name lower-rsi-infra'
+                            def ELB_DOMAIN = sh(script: './get_elb.sh dta-ingress default', returnStdout: true).trim()
+                            sh "./cloudflare_dns.sh ${params.DOMAIN_NAME} CNAME ${ELB_DOMAIN}"
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+    post { 
+        always { 
+            cleanWs()
+        }
+    }
+}

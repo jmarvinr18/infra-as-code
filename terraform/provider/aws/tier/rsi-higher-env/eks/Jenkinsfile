@@ -1,0 +1,134 @@
+properties([
+    parameters([
+        choice(
+            choices: ['eks'],
+            name: 'Module_Name'
+        ), 
+        choice(
+            choices: [
+                'plan',
+                'apply',
+                'destroy'],
+            name: 'Terraform_Action'
+        )]
+    )
+])
+pipeline {
+    agent any
+    options {
+        skipStagesAfterUnstable()
+    }
+    environment {
+        HOME = '.'
+    }
+    stages {
+         stage('Terraform Notification') {
+            steps { 
+                sendBuildNotification('📣', '#439FE0', 'STARTED', env.JOB_NAME, env.BUILD_NUMBER, 'Cloud Infrastructure', env.BUILD_URL)
+            }
+        }
+        
+        stage('Terraform Init') { 
+            steps { 
+                echo "Enter File Name ${params.Module_Name}"
+                withAWS(credentials: 'rsi-higher', region: 'ap-southeast-1') {
+                    script{
+                        sh 'terraform -chdir=provider/aws/tier/rsi-higher-env/${Module_Name}/ init'
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Action') {
+            steps {
+                echo "${params.Terraform_Action}"
+                withAWS(credentials: 'rsi-higher', region: 'ap-southeast-1') {
+                    // sh 'terraform get -update'
+                    script {
+                        if (params.Terraform_Action == 'plan') {
+                            sh 'terraform -chdir=provider/aws/tier/rsi-higher-env/${Module_Name}/ plan'
+                        }   else if (params.Terraform_Action == 'apply') {
+                            sh 'terraform -chdir=provider/aws/tier/rsi-higher-env/${Module_Name}/ apply -auto-approve'
+                        }   else if (params.Terraform_Action == 'destroy') {
+                            input("Do you really want to destroy it?")
+                            sh 'terraform -chdir=provider/aws/tier/rsi-higher-env/${Module_Name}/ destroy -auto-approve'
+                        } else {
+                            // error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
+                            sh 'echo "skipped since terraform action is not appropriate for this stage"'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('K8s Cluster-Autoscaler') {
+            steps {
+                echo "${params.Terraform_Action}"
+                withAWS(credentials: 'rsi-higher', region: 'ap-southeast-1') {
+                    script {
+                        if (params.Terraform_Action == 'apply') {
+                            sh 'aws eks update-kubeconfig --region ap-southeast-1 --name higher-rsi-infra'
+                            sh 'kubectl apply -f scripts/k8s/cluster-autoscaler.yaml'
+                        } else {
+                            // error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
+                            sh 'echo "skipped since terraform action is not appropriate for this stage"'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('K8s Deploy Initial Ingress') {
+            // environment {
+            //     // KUBECONFIG_CREDS = credentials('higher-ts-kubeconfig')
+            //     // REPO_TOKEN = credentials('repo-token')
+            // }
+            steps {
+                echo "${params.Terraform_Action}"
+                withAWS(credentials: 'rsi-higher', region: 'ap-southeast-1') {
+                    script {
+                        if (params.Terraform_Action == 'apply') {
+                            sh 'aws eks update-kubeconfig --region ap-southeast-1 --name higher-rsi-infra'
+                            // sh 'git clone --branch k8s-ingress http://root:${REPO_TOKEN}@github.com/Reliasourcing/tf-aws-851725621251.git deploy-ingress'
+                            sh 'kubectl apply -f provider/aws/tier/rsi-higher-env/eks/k8s/ingress/prd-ingress.yaml' // --kubeconfig=${KUBECONFIG_CREDS} --validate=false'xwww
+                        } else {
+                            // error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
+                            sh 'echo "skipped since terraform action is not appropriate for this stage"'
+                        }
+                    }
+                }
+            }
+        }
+    
+    }
+
+    post {
+        success {
+            script {
+                sendBuildNotification('✅', '#36a64f', 'COMPLETED', env.JOB_NAME, env.BUILD_NUMBER, 'Cloud Infrastructure', env.BUILD_URL)
+            }
+        }
+        failure {
+            script {
+                sendBuildNotification('❌', '#ff0000', 'FAILED', env.JOB_NAME, env.BUILD_NUMBER, 'Cloud Infrastructure', env.BUILD_URL)
+            }
+        }
+        always {
+            // sh 'kubectl config delete-context arn:aws:eks:ap-southeast-1:851725621251:cluster/higher-rsi-infra'
+            cleanWs()
+        }
+    }
+}
+
+
+def sendApprovalNotification(color, jobName, buildNumber, environment, buildUrl, tagged) {
+    def message = "🚦 Build *APPROVAL*: Pipeline ${jobName} | *Job* # ${buildNumber} | *Service*: Amazon EKS | *Environment*: ${environment} | More Info: ${buildUrl} \n 🗣️ ${tagged} "
+    slackSend(channel: 'rsi-builds-approval', color: color, message: message)
+    // slackSend(color: color, message: message)
+}
+
+def sendBuildNotification(emoji, color, status, jobName, buildNumber, environment, buildUrl) {
+    def message = "${emoji} Build *${status.toUpperCase()}*: Pipeline ${jobName} | *Service*: Amazon EKS | *Job* # ${buildNumber} | *Environment*: ${environment} | More Info: ${buildUrl}"
+    slackSend(channel: 'rsi-tech-builds', color: color, message: message)
+    // slackSend(color: color, message: message)
+}

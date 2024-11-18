@@ -1,0 +1,65 @@
+properties([
+    parameters([
+        choice(
+            choices: ['ecr'],
+            name: 'Module_Name'
+        ), 
+        choice(
+            choices: [
+                'plan',
+                'apply',
+                'destroy'],
+            name: 'Terraform_Action'
+        )]
+    )
+])
+pipeline {
+    agent any
+    options {
+        skipStagesAfterUnstable()
+    }
+    environment {
+        HOME = '.'
+    }
+    stages {
+        
+        stage('Terraform Init') { 
+            steps { 
+                echo "Enter File Name ${params.Module_Name}"
+                withAWS(credentials: 'rsi-higher', region: 'ap-southeast-1') {
+                    script{
+                        sh 'terraform -chdir=provider/aws/tier/rsi-higher-env/${Module_Name}/ init'
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Action') {
+            steps {
+                echo "${params.Terraform_Action}"
+                withAWS(credentials: 'rsi-higher', region: 'ap-southeast-1') {
+                    // sh 'terraform get -update'
+                    script {
+                        if (params.Terraform_Action == 'plan') {
+                            sh 'terraform -chdir=provider/aws/tier/rsi-higher-env/${Module_Name}/ plan'
+                        }   else if (params.Terraform_Action == 'apply') {
+                            sh 'terraform -chdir=provider/aws/tier/rsi-higher-env/${Module_Name}/ apply -auto-approve'
+                        }   else if (params.Terraform_Action == 'destroy') {
+                            input("Do you really want to destroy it?")
+                            sh 'terraform -chdir=provider/aws/tier/rsi-higher-env/${Module_Name}/ destroy -auto-approve'
+                        } else {
+                            error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
+                        }
+                    }
+                }
+            }
+        }
+    
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}

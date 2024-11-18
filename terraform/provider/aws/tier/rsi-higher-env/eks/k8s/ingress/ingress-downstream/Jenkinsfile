@@ -1,0 +1,83 @@
+properties([
+    parameters([
+        choice(
+            choices: ['staging', 'production'],
+            name: 'Environment'
+        ),
+        string(
+            defaultValue: "",
+            description: 'domain name exactname',
+            name: 'DOMAIN_NAME'
+        )
+    ])
+])
+pipeline {
+    agent any
+    options {
+        skipStagesAfterUnstable()
+    }
+    environment {
+        HOME = '.'
+    }
+    // parameters {
+    //     string(defaultValue: "", description: 'domain name parameter', name: 'DOMAIN_NAME')
+    // }
+    stages {
+        stage('K8s Deploy Ingress') {
+            steps {
+                withAWS(credentials: 'rsi-higher', region: 'ap-southeast-1') {
+                    script {
+                        sh 'aws eks update-kubeconfig --region ap-southeast-1 --name higher-rsi-infra'
+                        if (params.Environment == 'staging') {
+                            sh 'kubectl apply -f provider/aws/tier/rsi-higher-env/eks/k8s/ingress/stg-ingress.yaml'
+                        } else if (params.Environment == 'production') {
+                            input("Do you really want to apply this on prod?")
+                            sh 'kubectl apply -f provider/aws/tier/rsi-higher-env/eks/k8s/ingress/prd-ingress.yaml'
+                        } else {
+                            error "Invalid value for Environment Option: ${params.Environment}"
+                        }
+                        sh 'sleep 5'
+                    }
+                }
+            }
+        }
+
+        stage('Creating/Updating DNS Records') {
+            steps {
+                withAWS(credentials: 'rsi-higher', region: 'ap-southeast-1') {
+                    script {
+                        if (params.Environment == 'staging') {
+                            dir('provider/aws/tier/rsi-lower-env/eks/k8s/ingress') {
+                                script {
+                                    sh "chmod +x get_elb.sh"
+                                    sh "chmod +x cloudflare_dns.sh"
+                                    sh 'aws eks update-kubeconfig --region ap-southeast-1 --name higher-rsi-infra'
+                                    def ELB_DOMAIN = sh(script: './get_elb.sh stg-ingress default', returnStdout: true).trim()
+                                    sh "./cloudflare_dns.sh ${params.DOMAIN_NAME} CNAME ${ELB_DOMAIN}"
+                                }
+                            }
+                        } else if (params.Environment == 'production') {
+                            dir('provider/aws/tier/rsi-higher-env/eks/k8s/ingress') {
+                                script {
+                                    sh "chmod +x get_elb.sh"
+                                    sh "chmod +x cloudflare_dns.sh"
+                                    sh 'aws eks update-kubeconfig --region ap-southeast-1 --name higher-rsi-infra'
+                                    def ELB_DOMAIN = sh(script: './get_elb.sh prd-ingress default', returnStdout: true).trim()
+                                    sh "./cloudflare_dns.sh ${params.DOMAIN_NAME} CNAME ${ELB_DOMAIN}"
+                                }
+                            }
+                        } else {
+                            error "Invalid value for Environment Option: ${params.Environment}"
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+    post { 
+        always { 
+            cleanWs()
+        }
+    }
+}

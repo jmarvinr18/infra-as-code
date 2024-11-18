@@ -1,0 +1,114 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: stg-ingress
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip 
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-southeast-1:905418407535:certificate/6f450ca8-ce76-428d-8646-96ecfb5e342d
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/ssl-policy: 'ELBSecurityPolicy-TLS13-1-2-2021-06'
+spec:
+  ingressClassName: alb
+  rules:
+    - host: stg-xpg.rslot.rsi-techzone.xyz
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: stg-kunzite-api-svc
+                port:
+                  number: 80
+    - host: stg-ids.rslot.rsi-techzone.xyz
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: stg-inderite-api-svc
+                port:
+                  number: 80
+    - host: stg-geo.rslot.rsi-techzone.xyz
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: stg-rhodonite-api-svc
+                port:
+                  number: 80
+    - host: stg-wsc.rslot.rsi-techzone.xyz
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: stg-creedite-api-svc
+                port:
+                  number: 80                  
+    - host: stg-pay.rslot.rsi-techzone.xyz
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: stg-jasper-api-svc
+                port:
+                  number: 80
+    - host: stg-affiliate.rslot.rsi-techzone.xyz
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: stg-amethyst-api-svc
+                port:
+                  number: 80
+    - host: stg-scc.rslot.rsi-techzone.xyz
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: stg-sardonyx-api-svc
+                port:
+                  number: 80
+    - host: stg.rslot.rsi-techzone.xyz
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: stg-spinel-web-svc
+                port:
+                  number: 80
+    - host: stg-admin.rslot.rsi-techzone.xyz
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: stg-algodonite-admin-web-svc
+                port:
+                  number: 80
+    - host: stg-agent.rslot.rsi-techzone.xyz
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: stg-algodonite-agent-web-svc
+                port:
+                  number: 80

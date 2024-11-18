@@ -1,0 +1,78 @@
+properties([
+    parameters([
+        choice(
+            choices: [
+                'sops',
+                'sshkey'
+                ],
+            name: 'Service_Name'
+        ), 
+        choice(
+            choices: [
+                'plan',
+                'apply',
+                'destroy',
+                'output-priv-key'],
+            name: 'Terraform_Action'
+        )]
+    )
+])
+pipeline {
+    agent any
+    options {
+        skipStagesAfterUnstable()
+    }
+    environment {
+        HOME = '.'
+    }
+    stages {
+         stage('Clone repository of "tf-aws-851725621251"') { 
+            steps { 
+                script{
+                    checkout scm
+                }
+            }
+        }
+        
+        stage('Terraform Init') { 
+            steps { 
+                echo "Enter File Name ${params.Module_Name}"
+                withAWS(credentials: 'rsi-higher', region: 'ap-southeast-1') {
+                    script{
+                        sh 'terraform -chdir=provider/aws/tier/rsi-higher-env/services/${Service_Name}/ init'
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Action') {
+            steps {
+                echo "${params.Terraform_Action}"
+                withAWS(credentials: 'rsi-higher', region: 'ap-southeast-1') {
+                    // sh 'terraform get -update'
+                    script {
+                        if (params.Terraform_Action == 'plan') {
+                            sh 'terraform -chdir=provider/aws/tier/rsi-higher-env/services/${Service_Name}/ plan'
+                        }   else if (params.Terraform_Action == 'apply') {
+                            sh 'terraform -chdir=provider/aws/tier/rsi-higher-env/services/${Service_Name}/ apply -auto-approve'
+                        }   else if (params.Terraform_Action == 'destroy') {
+                            input("Do you really want to destroy it?")
+                            sh 'terraform -chdir=provider/aws/tier/rsi-higher-env/services/${Service_Name}/ destroy -auto-approve'
+                        }   else if (params.Terraform_Action == 'output-priv-key') {
+                            sh 'terraform -chdir=provider/aws/tier/rsi-higher-env/services/${Service_Name}/ output -raw ssh_private_key'
+                        } else {
+                            error "Invalid value for Terraform_Action: ${params.Terraform_Action}"
+                        }
+                    }
+                }
+            }
+        }
+    
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
