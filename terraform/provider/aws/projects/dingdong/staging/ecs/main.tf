@@ -61,7 +61,7 @@ module "ecs-service" {
 
 module "td" {
   source                = "../../../../modules/ecs/task-definition"
-  app_task_family       = "rsi-corp-td"
+  app_task_family       = var.td_name
   execution_role_arn    = module.ECSTaskExecutionRole.arn
   container_definitions = "${path.module}/task-definition.json"
   # requires_compatibilities = 
@@ -80,7 +80,7 @@ module "ECSTaskExecutionRole" {
 
   inline_policy = var.inline_policies_files
 
-  role_name = "ECSTaskExecutionRole"
+  role_name = "ECSTaskExecutionRole2"
 
 }
 
@@ -139,9 +139,6 @@ module "ECSServiceRolePolicy" {
 
 
 
-
-
-
 ##############################################################
 ##                  EC2 Instance Creation                   ##
 ##############################################################
@@ -150,14 +147,14 @@ module "ECSServiceRolePolicy" {
 
 ##### Create Key Pair ######
 
-data "aws_key_pair" "this" {
-  key_name           = var.key_name
-  include_public_key = true
+# data "aws_key_pair" "this" {
+#   key_name           = var.key_name
+#   include_public_key = true
 
-}
+# }
 
 module "key_pair" {
-  count    = length(data.aws_key_pair.this.id) == 0 ? 1 : 0
+  # count    = length(data.aws_key_pair.this.id) == 0 ? 1 : 0
   source   = "../../../../modules/key_pair"
   key_name = var.key_name
   key_path = var.key_path
@@ -168,7 +165,7 @@ module "key_pair" {
 
 module "ec2" {
   source                 = "../../../../modules/ec2/instance"
-  key_pair               = data.aws_key_pair.this.key_name
+  key_pair               = module.key_pair.key_name
   vpc_security_group_ids = var.vpc_security_group_ids
   amis                   = var.amis
   subnet_id              = var.subnet_id
@@ -224,7 +221,7 @@ module "ami_from_instance" {
 ##### Converting the EC2 instance into a Launch Template #####
 module "launch_template" { 
   source      = "../../../../modules/ec2/launch_template"
-  name_prefix = "test-rsi-"
+  name_prefix = var.launch_template_name_prefix
 
   instance_profile = {
     name = module.ECSInstanceRole.name

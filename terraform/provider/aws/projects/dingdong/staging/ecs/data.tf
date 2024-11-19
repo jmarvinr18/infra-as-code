@@ -1,23 +1,11 @@
 data "aws_security_group" "this" {
-  name = "rsi-corp-prod-sg"
+  name = "dingdong-sg"
 }
 
 data "aws_vpc" "selected" {
   filter {
-    name   = "tag:Provisioner"
-    values = ["terraform"]
-  }
-  filter {
     name   = "tag:Name"
-    values = ["higher-rsi-infra"]
-  }
-  filter {
-    name   = "tag:Tier"
-    values = ["high"]
-  }
-  filter {
-    name   = "tag:Env"
-    values = ["higher"]
+    values = ["iGo Production VPC"]
   }
 }
 
@@ -38,9 +26,9 @@ data "aws_subnets" "selected" {
 
 # }
 
-data "aws_ecs_task_definition" "this" {
-  task_definition = var.td_name
-}
+# data "aws_ecs_task_definition" "this" {
+#   task_definition = var.td_name
+# }
 
 # data "aws_alb_target_group" "this" {
 #   name = var.ecs_target_group

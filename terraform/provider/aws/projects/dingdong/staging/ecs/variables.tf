@@ -39,6 +39,9 @@ variable "asg_capacity_provider" {
 
 #### SERVICE CREATION VARIABLES ####
 
+variable "launch_template_name_prefix" {
+   type = string
+}
 variable "launch_type" {
   type = string
 }
