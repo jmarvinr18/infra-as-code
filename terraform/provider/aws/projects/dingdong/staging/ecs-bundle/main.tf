@@ -48,7 +48,7 @@ module "ecs-service" {
   container_port   = var.container_port
   container_name   = var.container_name
 
-  
+
 
   depends_on = [module.ServiceRoleForECS, module.cluster, module.ec2]
 
@@ -129,12 +129,12 @@ module "ServiceRoleForECS" {
 }
 
 module "ECSServiceRolePolicy" {
-  source = "../../../../modules/iam/policy"
-  name = var.ecs_service_role_policy_name
+  source           = "../../../../modules/iam/policy"
+  name             = var.ecs_service_role_policy_name
   policy_file_name = var.ecs_service_policy_path
-  role_id = module.ServiceRoleForECS.id
+  role_id          = module.ServiceRoleForECS.id
 
-  depends_on = [ module.ServiceRoleForECS, module.cluster ]
+  depends_on = [module.ServiceRoleForECS, module.cluster]
 }
 
 
@@ -219,7 +219,7 @@ module "ami_from_instance" {
 }
 
 ##### Converting the EC2 instance into a Launch Template #####
-module "launch_template" { 
+module "launch_template" {
   source      = "../../../../modules/ec2/launch_template"
   name_prefix = var.launch_template_name_prefix
 
@@ -320,12 +320,12 @@ module "asg" {
   source = "../../../../modules/asg"
 
   asg_availability_zones = var.asg_availability_zones
-  desired_capacity = var.desired_capacity
-  max_size = var.max_size
-  min_size = var.min_size
+  desired_capacity       = var.desired_capacity
+  max_size               = var.max_size
+  min_size               = var.min_size
 
   launch_template = {
-    id = module.launch_template.launch_template_id
+    id      = module.launch_template.launch_template_id
     version = module.launch_template.latest_version
   }
   lb_target_group_arn = module.target_group.arn

@@ -1,0 +1,10 @@
+---
+# tasks file for docker
+- name: Pull an image
+  become: true
+  community.docker.docker_image:
+    name: {{ IMAGE }}
+    source: pull
+    # Select platform for pulling. If not specified, will pull whatever docker prefers.
+    pull:
+      platform: amd64

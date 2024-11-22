@@ -1,0 +1,8 @@
+---
+- name: Renewal of "{{ brand_name }}" SSL
+  hosts: all
+  become: true
+  roles:
+    - role: '/whitelabel/dockerize/certbot'
+      vars:
+        brand_name: ""

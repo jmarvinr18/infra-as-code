@@ -1,0 +1,22 @@
+---
+# tasks file for ssl-renewal/whitelabel/dockerize/certbot
+- name: Pull docker image aslitechnologies/certbot
+  docker_image:
+    name: aslitechnologies/certbot
+    source: pull
+- name: Running certbot container and removing it upon exit.
+  ansible.builtin.docker_container:
+    name: certbot
+    image: aslitechnologies/certbot
+    command: /bin/ash "{{ brand_name }}"
+    auto_remove: yes
+    detach: yes
+    volumes:
+      - certbot:/etc/letsencrypt/
+      - acme:/home/acme
+    working_dir: /certscr/sites
+- name: Refresh nginx
+  community.docker.docker_container_exec:
+    container: nginx_gateway
+    command: sh -c "nginx -s reload"
+  register: result

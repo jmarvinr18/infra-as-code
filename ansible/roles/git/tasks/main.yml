@@ -1,0 +1,27 @@
+---
+# tasks file for git
+- name: Create folder if not exists
+  become: true
+  ansible.builtin.file:
+    path: "{{ DIRECTORY }}{{ REPO_NAME }}"
+    state: directory
+    owner: ubuntu
+    group: ubuntu 
+    mode: "0777"
+
+
+- name: Cloning the repository...
+  git:
+    repo: "{{ REPO_URL }}"
+    dest: "{{ DIRECTORY }}{{ REPO_NAME }}"
+    clone: yes
+    update: yes
+    version: "{{ BRANCH }}"
+    accept_hostkey: yes
+    key_file: "{{ KEY_PATH }}"
+
+- name: Install PM2
+  become: true
+  command: chown ubuntu:ubuntu -R .git
+  args:
+    chdir: "{{ DIRECTORY }}{{ REPO_NAME }}"

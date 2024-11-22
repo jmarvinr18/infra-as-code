@@ -1,0 +1,8 @@
+---
+- name: Setup Webserver
+  hosts: all
+  become: true
+  roles:
+    - nodejs
+    - apache2
+    - git

@@ -1,0 +1,5 @@
+---
+# tasks file for execute-command
+- name: Execute command
+  become: true
+  shell: "{{ COMMAND }}"
