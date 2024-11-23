@@ -2,4 +2,4 @@
 .terraform.*
 terraform.*
 
-*/ansible/vars.yaml
+*vars.yaml
