@@ -1,0 +1,45 @@
+---
+- name: Install package dependencies.
+  package: name={{ item }} state=present
+  with_items:
+    - unzip
+
+- name: Download the awscli bundle.
+  get_url: url=https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip dest=/tmp/awscli-exe-linux-x86_64.zip
+  register: aws_cli_download_bundle
+
+- name: Unarchive the installer.
+  unarchive: src=/tmp/awscli-exe-linux-x86_64.zip dest=/tmp copy=no creates=/tmp/awscli-exe-linux-x86_64
+  when: aws_cli_download_bundle.changed
+  register: aws_cli_unarchive_installer
+
+- name: Install awscli package.
+  shell: /tmp/aws/install
+  become: true
+  when: aws_cli_unarchive_installer.changed
+
+- name: Configure AWS.
+  shell: aws configure set {{ item.key }} {{ item.value }} --profile {{ aws_profile }}
+  # no_log: true
+  with_dict:
+    aws_access_key_id: "{{ aws_access_key }}"
+    aws_secret_access_key: "{{ aws_secret_key }}"
+    region: "{{ aws_region }}"
+    format: "{{ aws_format }}"
+  become_user: "{{ aws_system_user }}"
+  changed_when: false
+
+- name: Login to AWS ECR
+  shell: aws ecr get-login-password --region {{ aws_region }} | docker login --username AWS --password-stdin {{ aws_ecr_repo }}
+
+
+- name: Pull docker image
+  shell: docker pull {{ aws_ecr_repo }}/{{ docker_image }}
+  become: true
+
+- name: Run docker container
+  community.docker.docker_container:
+    name: "{{ container_name }}"
+    image: "{{ aws_ecr_repo }}/{{ docker_image }}"
+    ports:
+      - "{{ exposed_port }}:{{ container_port }}"

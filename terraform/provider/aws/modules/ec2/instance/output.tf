@@ -4,8 +4,18 @@ output "instance_ip_address" {
 }
 
 output "id" {
-  value = aws_instance.this.id
+  value       = aws_instance.this.id
   description = "Instance ID"
+}
+
+output "public_dns" {
+  value       = aws_instance.this.public_dns
+  description = "Public DNS"
+}
+
+output "public_ip" {
+  value       = aws_instance.this.public_ip
+  description = "Public IP"
 }
 
 output "device_name" {

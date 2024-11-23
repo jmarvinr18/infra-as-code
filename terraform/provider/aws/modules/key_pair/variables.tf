@@ -5,3 +5,7 @@ variable "key_name" {
 variable "key_path" {
   type = string
 }
+
+variable "tags" {
+  type = map(string)
+}

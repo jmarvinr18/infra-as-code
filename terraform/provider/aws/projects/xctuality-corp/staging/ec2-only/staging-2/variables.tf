@@ -9,6 +9,10 @@ variable "key_path" {
 # variable "security_groups" {
 #   type = list(string)
 # }
+
+variable "instance_type" {
+  type = string
+}
 variable "amis" {
   type = string
 }

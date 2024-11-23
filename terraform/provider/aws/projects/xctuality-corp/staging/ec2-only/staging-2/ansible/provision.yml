@@ -5,10 +5,14 @@
   vars:
     apache_config_files:
       - "site.conf"
+  vars_files:
+      - vars.yaml
+        
   roles:
     ## Execute build and deploy script
     - role: "/mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/ansible/roles/apache2"
       vars:
-        SOURCE_PATH: "/mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/terraform/provider/aws/projects/dingdong/staging/ec2-only/assets/apache2"
+        SOURCE_PATH: "/mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/terraform/provider/aws/projects/xctuality-corp/staging/ec2-only/staging-2/assets/apache2"
         FILENAME: "{{ apache_config_files }}"
     - role: /mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/ansible/roles/docker
+    - role: /mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/ansible/roles/aws-cli

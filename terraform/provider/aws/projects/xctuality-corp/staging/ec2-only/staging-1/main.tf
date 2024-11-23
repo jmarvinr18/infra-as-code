@@ -30,6 +30,7 @@ module "ec2" {
   source          = "../../../../modules/ec2/instance"
   key_pair        = module.key_pair.key_name
   amis            = var.amis
+  instance_type = var.instance_type
   subnet_id       = var.subnet_id
   private_key     = "${var.key_path}/${var.private_key}"
   security_groups = [module.sg.id]
