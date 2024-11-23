@@ -76,9 +76,9 @@ variable "name" {
   type = string
 }
 
-# variable "value" {
-#   type = string
-# }
+variable "proxied" {
+  type = bool
+}
 
 variable "type" {
   type = string

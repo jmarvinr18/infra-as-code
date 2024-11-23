@@ -83,5 +83,6 @@ module "cloudflare" {
   value                = module.ec2.public_ip
   type                 = var.type
   ttl                  = var.ttl
+  proxied              = var.proxied
 
 }

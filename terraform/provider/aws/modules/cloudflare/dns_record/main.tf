@@ -3,5 +3,8 @@ resource "cloudflare_record" "this" {
   name    = var.name
   content   = var.value
   type    = var.type
+
+  proxied = var.proxied
   ttl     = var.ttl
+
 }

@@ -21,3 +21,7 @@ variable "type" {
 variable "ttl" {
   type = string
 }
+
+variable "proxied" {
+  type = bool
+}
