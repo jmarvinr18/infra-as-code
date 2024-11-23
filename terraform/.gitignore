@@ -1,7 +1,9 @@
 .terraform
 .terraform.*
-terraform.*
+terraform.tfstate
+terraform.tf
+terraform.tfstate.backup
+*terraform.tfvars
 
 *vars.yaml
 
-*terraform.tfvars
