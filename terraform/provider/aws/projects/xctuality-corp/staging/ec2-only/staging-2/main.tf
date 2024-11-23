@@ -15,7 +15,7 @@ module "sg" {
 
 module "key_pair" {
   source   = "../../../../../modules/key_pair"
-  key_name = "${var.key_name}"
+  key_name = var.key_name
   key_path = var.key_path
   tags     = var.tags
 
@@ -30,7 +30,7 @@ module "ec2" {
   source          = "../../../../../modules/ec2/instance"
   key_pair        = module.key_pair.key_name
   amis            = var.amis
-  instance_type = var.instance_type
+  instance_type   = var.instance_type
   subnet_id       = var.subnet_id
   private_key     = "${var.key_path}/${var.private_key}"
   security_groups = [module.sg.id]
@@ -67,4 +67,21 @@ resource "null_resource" "ansible_provisioner" {
     command     = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -T 300 -i inventory.ini -e 'ansible_user=ubuntu' --private-key=${var.key_path}/${var.private_key} -e 'pub_key=${var.key_path}/${var.key_name}' provision.yml -v"
     working_dir = "./ansible"
   }
+}
+
+
+####################################################################
+##                     Cloudflare Entry                           ##
+####################################################################
+
+module "cloudflare" {
+  source = "../../../../../modules/cloudflare/dns_record"
+
+  cloudflare_api_token = var.cloudflare_api_token
+  zone_id              = var.zone_id
+  name                 = var.name
+  value                = module.ec2.public_ip
+  type                 = var.type
+  ttl                  = var.ttl
+
 }
