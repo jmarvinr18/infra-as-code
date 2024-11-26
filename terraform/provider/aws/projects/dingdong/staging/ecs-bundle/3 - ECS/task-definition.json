@@ -1,11 +1,11 @@
 [
     {
-        "name": "rsi-corp-app",
-        "image": "339712823657.dkr.ecr.ap-southeast-1.amazonaws.com/stg-rhodochrosite-admin-api:stg-build-28",
+        "name": "dingdong-production-app",
+        "image": "664812007902.dkr.ecr.ap-southeast-1.amazonaws.com/prod-dingdong-admin:latest",
         "cpu": 1024,
         "portMappings": [
             {
-                "name": "rsi-corp-app-8080-tcp",
+                "name": "dingdong-production-app-8080-tcp",
                 "containerPort": 8080,
                 "hostPort": 8080,
                 "protocol": "tcp",
@@ -14,12 +14,7 @@
         ],
         "essential": true,
         "environment": [],
-        "environmentFiles": [
-            {
-                "value": "arn:aws:s3:::rsi-corp-higher/.env",
-                "type": "s3"
-            }
-        ],
+        "environmentFiles": [],
         "mountPoints": [],
         "volumesFrom": [],
         "workingDirectory": "/var/www/html",
@@ -27,7 +22,7 @@
         "logConfiguration": {
             "logDriver": "awslogs",
             "options": {
-                "awslogs-group": "/ecs/rsi-corp-td",
+                "awslogs-group": "/ecs/dingdong-production-td",
                 "mode": "non-blocking",
                 "awslogs-create-group": "true",
                 "max-buffer-size": "25m",

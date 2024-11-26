@@ -12,8 +12,13 @@ data "aws_vpc" "selected" {
 data "aws_subnets" "selected" {
   filter {
     name   = "tag:Name"
-    values = ["public-ap-southeast-1*"]
+    values = ["iGo Production 1*"]
   }
+}
+
+
+data "aws_iam_role" "this" {
+  name = "ECSInstanceRole"
 }
 
 

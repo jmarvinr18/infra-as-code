@@ -29,3 +29,7 @@ variable "elb_id" {
 variable "lb_target_group_arn" {
   type = string
 }
+
+variable "name" {
+  type = string
+}

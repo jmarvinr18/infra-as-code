@@ -1,102 +1,13 @@
-variable "profile" {
-  description = "local aws-cli profile name"
-  default     = "xctuality"
-}
-
-variable "region" {
-  description = "aws region"
-  default     = "ap-southeast-1"
-}
-
-
-#### CLUSTER CREATION VARIABLES ####
-variable "app_cluster_name" {
-  type = string
-}
-
-variable "capacity_provider" {
-  type = list(string)
-}
-
-
-variable "asg_capacity_provider" {
-  type = list(object({
-    name = string
-    auto_scaling_group_provider = object({
-      auto_scaling_group_arn         = string
-      managed_termination_protection = string
-
-      managed_scaling = object({
-        maximum_scaling_step_size = number
-        minimum_scaling_step_size = number
-        status                    = string
-        target_capacity           = number
-      })
-    })
-
-  }))
-}
-
-#### SERVICE CREATION VARIABLES ####
-
-variable "launch_template_name_prefix" {
-   type = string
-}
-variable "launch_type" {
-  type = string
-}
-
-variable "service_name" {
-  type = string
-}
-
-variable "td_name" {
-  type = string
-}
-
-variable "cluster_name" {
-  type = string
-}
-
-variable "ecs_role_name" {
-  type = string
-}
-variable "ecs_target_group" {
-  type = string
-}
-
-variable "container_name" {
-  type = string
-}
-
-variable "container_port" {
-  type = string
-}
-
-#### ROLE CREATION VARIABLES ####
-
-variable "inline_policies_files" {
-  type = list(object({
-    name = string
-    file = string
-  }))
-}
-
-variable "ecs_service_role_policy_name" {
-  type = string
-}
-variable "ecs_service_policy_path" {
-  type = string
-}
-
-variable "assume_role_policy" {
-  type = string
-}
-
-
 #### EC2 INSTANCE CREATION VARIABLES ####
 
 
+variable "launch_template_name_prefix" {
+  type = string
+}
+
+variable "aws_key_name" {
+  type = string
+}
 variable "key_name" {
   type = string
 }
@@ -106,6 +17,29 @@ variable "key_path" {
 variable "key_pair" {
   type = string
 }
+
+variable "instance_type" {
+  type = string
+}
+
+variable "security_group_name" {
+  type = string
+}
+
+variable "vpc_id" {
+  type = string
+}
+
+variable "ingress_rules" {
+  type = list(object({
+    from_port   = number
+    to_port     = number
+    protocol    = string
+    cidr_blocks = list(string)
+    description = string
+  }))
+}
+
 variable "vpc_security_group_ids" {
   type = list(string)
 }
@@ -128,6 +62,17 @@ variable "iam_instance_profile" {
 variable "tags" {
   type = map(string)
 }
+
+variable "profile" {
+  type        = string
+  description = "local aws-cli profile name"
+}
+
+variable "region" {
+  type        = string
+  description = "aws region"
+}
+
 
 variable "ami_from_instance_name" {
   type = string
@@ -180,6 +125,10 @@ variable "elb_listeners" {
       })
     })
   }))
+}
+
+variable "asg_name" {
+  type = string
 }
 
 variable "asg_availability_zones" {

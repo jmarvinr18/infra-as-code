@@ -10,6 +10,9 @@ resource "aws_lb_target_group" "this" {
     healthy_threshold = var.health_check.healthy_threshold
     unhealthy_threshold = var.health_check.unhealthy_threshold
   }
+
+  tags = var.tags
+
 }
 
 resource "aws_lb_target_group_attachment" "this" {

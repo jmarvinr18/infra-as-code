@@ -32,3 +32,7 @@ variable "health_check" {
     unhealthy_threshold = number
   })
 }
+
+variable "tags" {
+  type = map(string)
+}

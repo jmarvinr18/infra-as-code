@@ -24,4 +24,4 @@ galaxy_info:
     - ubuntu
 
 dependencies:
-  - role: ~/Documents/reliasourcing/devops/IaC/andesine/roles/docker
+  - role: /mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/ansible/roles/docker

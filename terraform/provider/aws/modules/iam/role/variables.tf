@@ -31,8 +31,5 @@ variable "assume_role_policy" {
 
 variable "tags" {
   type = map(string)
-  default = {
-    "name" = ""
-  }
 }
 

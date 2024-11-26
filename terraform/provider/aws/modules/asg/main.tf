@@ -1,4 +1,5 @@
 resource "aws_autoscaling_group" "this" {
+  name               = var.name
   availability_zones = var.asg_availability_zones
   desired_capacity   = var.desired_capacity
   max_size           = var.max_size
@@ -17,6 +18,7 @@ resource "aws_autoscaling_attachment" "this" {
   autoscaling_group_name = aws_autoscaling_group.this.id
 #   elb                    = var.elb_id
   lb_target_group_arn = var.lb_target_group_arn
+
 }
 
 resource "aws_autoscaling_policy" "this" {

@@ -64,7 +64,8 @@
                 "s3:GetBucketCORS",
                 "s3:GetBucketLocation",
                 "s3:GetAccessPointPolicy",
-                "s3:GetObjectVersion"
+                "s3:GetObjectVersion",
+                "s3:ListBucket"
             ],
             "Resource": "*"
         }

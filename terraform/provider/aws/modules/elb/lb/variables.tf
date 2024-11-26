@@ -35,7 +35,4 @@ variable "access_logs" {
 }
 variable "tags" {
   type = map(string)
-  default = {
-    "name" = ""
-  }
 }
