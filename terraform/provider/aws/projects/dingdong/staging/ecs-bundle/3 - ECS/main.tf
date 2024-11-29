@@ -39,7 +39,9 @@ module "td" {
   app_task_family       = var.td_name
   execution_role_arn    = data.aws_iam_role.ECSTaskExecutionRole.arn
   container_definitions = "${path.module}/task-definition.json"
-  # requires_compatibilities = 
+
+  network_mode = var.network_mode
+  requires_compatibilities = ["EC2"]
   cpu = 1024
 }  
 
@@ -61,8 +63,6 @@ module "ecs-service" {
   launch_type      = var.launch_type
   container_port   = var.container_port
   container_name   = var.container_name
-
-
 
   depends_on = [module.cluster, module.td]
 

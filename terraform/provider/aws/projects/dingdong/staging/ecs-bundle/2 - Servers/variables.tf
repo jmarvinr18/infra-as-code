@@ -63,15 +63,6 @@ variable "tags" {
   type = map(string)
 }
 
-variable "profile" {
-  type        = string
-  description = "local aws-cli profile name"
-}
-
-variable "region" {
-  type        = string
-  description = "aws region"
-}
 
 
 variable "ami_from_instance_name" {
@@ -84,6 +75,16 @@ variable "ami_from_instance_name" {
 variable "target_group_name" {
   type = string
 }
+
+variable "target_group_port" {
+  type = number
+}
+
+variable "target_group_protocol" {
+  type = string
+}
+
+
 variable "instance_target_group_port" {
   type = number
 }
@@ -144,5 +145,41 @@ variable "max_size" {
 }
 
 variable "min_size" {
+  type = number
+}
+
+
+variable "profile" {
+  type        = string
+  description = "local aws-cli profile name"
+}
+
+variable "region" {
+  type        = string
+  description = "aws region"
+}
+
+
+variable "cloudflare_api_token" {
+  type = string
+}
+
+variable "zone_id" {
+  type = string
+}
+
+variable "name" {
+  type = string
+}
+
+variable "proxied" {
+  type = bool
+}
+
+variable "type" {
+  type = string
+}
+
+variable "ttl" {
   type = number
 }

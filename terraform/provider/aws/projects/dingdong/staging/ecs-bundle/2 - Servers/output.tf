@@ -30,3 +30,11 @@ output "instance_id" {
 output "id" {
   value = module.ec2.id
 }
+
+
+output "hostname" {
+  value = module.cloudflare.hostname
+}
+output "cloudflare_name" {
+  value = module.cloudflare.name
+}

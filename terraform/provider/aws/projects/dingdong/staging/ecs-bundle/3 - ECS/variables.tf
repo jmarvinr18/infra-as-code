@@ -30,6 +30,9 @@ variable "asg_capacity_provider" {
 
 #### SERVICE CREATION VARIABLES ####
 
+variable "network_mode" {
+  type = string
+}
 
 variable "launch_type" {
   type = string

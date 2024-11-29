@@ -148,15 +148,20 @@ module "launch_template" {
 module "target_group" {
   source                     = "../../../../../modules/elb/lb_target_group"
   name                       = var.target_group_name
+  port                       = var.target_group_port
+  protocol                   = var.target_group_protocol
+
   vpc_id                     = data.aws_vpc.selected.id
   instance_target_group_port = var.instance_target_group_port
   aws_instance_target_id     = module.ec2.id
+
 
   health_check = {
     path                = var.health_check.path
     port                = var.instance_target_group_port
     healthy_threshold   = var.health_check.healthy_threshold
     unhealthy_threshold = var.health_check.unhealthy_threshold
+
   }
   tags = var.tags
 
@@ -207,7 +212,7 @@ module "listener_and_routing" {
 module "asg" {
   source = "../../../../../modules/asg"
 
-  name = var.asg_name
+  name                   = var.asg_name
   asg_availability_zones = var.asg_availability_zones
   desired_capacity       = var.desired_capacity
   max_size               = var.max_size
@@ -218,5 +223,23 @@ module "asg" {
     version = module.launch_template.latest_version
   }
   lb_target_group_arn = module.target_group.arn
+
+}
+
+
+####################################################################
+##                     Cloudflare Entry                           ##
+####################################################################
+
+module "cloudflare" {
+  source = "../../../../../modules/cloudflare/dns_record"
+
+  cloudflare_api_token = var.cloudflare_api_token
+  zone_id              = var.zone_id
+  name                 = var.name
+  value                = module.load_balancer.cname
+  type                 = var.type
+  ttl                  = var.ttl
+  proxied              = var.proxied
 
 }

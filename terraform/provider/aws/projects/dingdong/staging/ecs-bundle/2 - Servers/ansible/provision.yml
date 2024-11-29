@@ -10,7 +10,7 @@
       ECS_LOGFILE=/log/ecs-agent.log
       ECS_AVAILABLE_LOGGING_DRIVERS=["json-file","awslogs"]
       ECS_LOGLEVEL=info
-      ECS_CLUSTER=DINGDONG-STAGING
+      ECS_CLUSTER=DINGDONG-PRODUCTION
       ECS_ENABLE_AWSLOGS_EXECUTIONROLE_OVERRIDE=true  
   roles:
     ## Execute build and deploy script

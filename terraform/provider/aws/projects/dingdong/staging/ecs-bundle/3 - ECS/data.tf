@@ -11,5 +11,13 @@ data "aws_autoscaling_group" "name" {
 }
 
 data "aws_lb_target_group" "this" {
-  name = "ECSTARGETGROUP"
+  name = "DINGDONG-TG"
 }
+
+# data "external" "name" {
+#   program = ["bash", "./target-group-exists.sh"]
+
+#   query = {
+#     name = "DINGDONG-TG"
+#   }
+# }
