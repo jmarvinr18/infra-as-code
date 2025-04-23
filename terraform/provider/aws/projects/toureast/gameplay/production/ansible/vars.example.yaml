@@ -1,0 +1,14 @@
+---
+aws_system_user: root
+aws_profile: default
+aws_access_key: <aws_access_key>
+aws_secret_key: <aws_secret_key>
+aws_region: ap-southeast-1
+aws_format: json
+
+
+container_name: xctuality.com
+docker_image: stg-xcorp:latest
+aws_ecr_repo: 664812007902.dkr.ecr.ap-southeast-1.amazonaws.com
+container_port: 3000
+exposed_port: 3100
