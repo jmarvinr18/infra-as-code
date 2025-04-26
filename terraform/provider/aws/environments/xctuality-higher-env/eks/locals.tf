@@ -4,5 +4,5 @@ locals {
   zone1       = "ap-southeast-1a"
   zone2       = "ap-southeast-1b"
   eks_name    = "xct-higher-eks"
-  eks_version = "1.30"
+  eks_version = "1.32"
 }
