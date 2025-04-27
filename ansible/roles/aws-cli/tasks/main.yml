@@ -24,13 +24,14 @@
   with_dict:
     aws_access_key_id: "{{ aws_access_key }}"
     aws_secret_access_key: "{{ aws_secret_key }}"
+    aws_session_token: "{{ aws_session_token }}"
     region: "{{ aws_region }}"
     format: "{{ aws_format }}"
   become_user: "{{ aws_system_user }}"
   changed_when: false
 
 - name: Login to AWS ECR
-  shell: aws ecr get-login-password --region {{ aws_region }} | docker login --username AWS --password-stdin {{ aws_ecr_repo }}
+  shell: aws ecr get-login-password --region {{ aws_region }} --profile {{ aws_profile }} | docker login --username AWS --password-stdin {{ aws_ecr_repo }}
 
 
 - name: Pull docker image
