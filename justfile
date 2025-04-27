@@ -1,38 +1,25 @@
-build:
-  echo Building…
+build: echo Building…
 
-test:
-  echo Testing…
+test: echo Testing…
 
-lint:
-  echo Linting…
+lint: echo Linting…
 
-commit:
-  git add -A
+commit: git add -A
   git commit -m "update file"
   git push origin main
 
-git-personal:
-  eval $(ssh-agent)
+git-personal: eval $(ssh-agent)
   ssh-add ~/.ssh/personal-git
 
-git-xctuality:
-  eval $(ssh-agent)
+git-xctuality: eval $(ssh-agent)
   ssh-add ~/.ssh/xctuality-git-key
 
+aws-configure: export AWS_PROFILE=xctuality
 
-aws-configure:
-  export AWS_PROFILE=xctuality
+tf-init: terraform init
 
+tf-apply: terraform apply --auto-approve=true
 
-tf-init:
-  terraform init
+tf-destroy: terraform destroy --auto-approve=true
 
-tf-apply:
-  terraform apply --auto-approve=true
-
-tf-destroy:
-  terraform destroy --auto-approve=true
-
-path:
-  pwd
+path: pwd

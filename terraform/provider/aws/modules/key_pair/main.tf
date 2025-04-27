@@ -1,5 +1,5 @@
 resource "aws_key_pair" "this" {
-  key_name   = var.aws_key_name
+  key_name   = var.key_name
   public_key = file("${var.key_path}/${var.key_name}")
-  tags = var.tags
+  tags       = var.tags
 }

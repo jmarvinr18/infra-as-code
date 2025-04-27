@@ -18,7 +18,6 @@ module "key_pair" {
   key_name = var.key_name
   key_path = var.key_path
   tags     = var.tags
-
 }
 
 

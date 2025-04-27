@@ -1,6 +1,6 @@
-variable "aws_key_name" {
-  type = string
-}
+# variable "aws_key_name" {
+#   type = string
+# }
 
 variable "key_name" {
   type = string
