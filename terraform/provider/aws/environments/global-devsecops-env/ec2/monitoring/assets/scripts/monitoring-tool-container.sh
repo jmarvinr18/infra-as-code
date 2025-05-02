@@ -32,10 +32,10 @@ sudo mv blackbox.yml blackbox
 sudo chmod 777 blackbox
 
 docker run --rm \
-  -d -p 9115/tcp \
+  -d -p 9115:9115 \
   --name blackbox_exporter \
   -v ./blackbox:/config \
-  --network=prometheus-network \
+  --network ip6net \
   quay.io/prometheus/blackbox-exporter:latest --config.file=./config/blackbox.yml
 
 # END BLACKBOX SETUP =========================================================

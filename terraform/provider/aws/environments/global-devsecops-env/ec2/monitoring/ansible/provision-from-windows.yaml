@@ -4,7 +4,8 @@
   become: true
   vars:
     apache_config_files:
-      - "site.conf"
+      - "grafana.xctuality.com.conf"
+      - "prometheus.xctuality.com.conf"
     files:
       - "prometheus.yml" 
       - "blackbox.yml" 
