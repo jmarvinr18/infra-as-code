@@ -32,4 +32,7 @@ docker run \
   --publish 50000:50000 \
   --volume jenkins-data:/var/jenkins_home \
   --volume jenkins-docker-certs:/certs/client:ro \
+  --volume /usr/local/bin/kubectl:/usr/local/bin/kubectl \
+  --volume /usr/local/bin/aws:/usr/local/bin/aws \
+  --volume /usr/local/bin/libpython3.13.so.1.0:/usr/local/bin/libpython3.13.so.1.0 \
   myjenkins-blueocean:2.492.3-1
