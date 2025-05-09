@@ -1,0 +1,94 @@
+route:
+  receiver: devops
+
+receivers:
+- name: devops
+  email_configs:
+  - to: 'marvin@xctuality.com'
+    from: 'notifications@xctuality.com'
+    smarthost: 'smtp.gmail.com:587'
+    auth_username: 'notifications@xctuality.com'
+    auth_identity: 'notifications@xctuality.com'
+    auth_password: 'qxur fdol vwdo slpq'
+- name: devops-team
+  slack_configs:
+  - channel: "#rsi-monitoring"
+    api_url: ""
+    send_resolved: true
+    color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+    icon_url: https://avatars3.githubusercontent.com/u/3380462
+    title: |-
+     [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }} for {{ .CommonLabels.job }}
+     {{- if gt (len .CommonLabels) (len .GroupLabels) -}}
+       {{" "}}(
+       {{- with .CommonLabels.Remove .GroupLabels.Names }}
+         {{- range $index, $label := .SortedPairs -}}
+           {{ if $index }}, {{ end }}
+           {{- $label.Name }}="{{ $label.Value -}}"
+         {{- end }}
+       {{- end -}}
+       )
+     {{- end }}
+    text: |-
+     {{ range .Alerts -}}
+     *Alert:* {{ .Annotations.title }}{{ if .Labels.severity }} - `{{ .Labels.severity }}`{{ end }}
+     *Description:* {{ .Annotations.description }}
+     *Details:*
+       {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+       {{ end }}
+     {{ end }}
+- name: torrospin-team
+  slack_configs:
+  - channel: '{{ if eq .Labels.channel "#torrospin" }}#rsi-ts-monitoring{{ end }}'
+    api_url: ""
+    send_resolved: true
+    color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+    icon_url: https://avatars3.githubusercontent.com/u/3380462
+    title: |-
+     [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }} for {{ .CommonLabels.job }}
+     {{- if gt (len .CommonLabels) (len .GroupLabels) -}}
+       {{" "}}(
+       {{- with .CommonLabels.Remove .GroupLabels.Names }}
+         {{- range $index, $label := .SortedPairs -}}
+           {{ if $index }}, {{ end }}
+           {{- $label.Name }}="{{ $label.Value -}}"
+         {{- end }}
+       {{- end -}}
+       )
+     {{- end }}
+    text: |-
+     {{ range .Alerts -}}
+     *Alert:* {{ .Annotations.title }}{{ if .Labels.severity }} - `{{ .Labels.severity }}`{{ end }}
+     *Description:* {{ .Annotations.description }}
+     *Details:*
+       {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+       {{ end }}
+     {{ end }}
+
+- name: whitelabel-team
+  slack_configs:
+  - channel: '{{ if eq .Labels.channel "#whitelabel" }}#rsi-wl-monitoring{{ end }}'
+    api_url: ""
+    send_resolved: true
+    color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+    icon_url: https://avatars3.githubusercontent.com/u/3380462
+    title: |-
+     [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }} for {{ .CommonLabels.job }}
+     {{- if gt (len .CommonLabels) (len .GroupLabels) -}}
+       {{" "}}(
+       {{- with .CommonLabels.Remove .GroupLabels.Names }}
+         {{- range $index, $label := .SortedPairs -}}
+           {{ if $index }}, {{ end }}
+           {{- $label.Name }}="{{ $label.Value -}}"
+         {{- end }}
+       {{- end -}}
+       )
+     {{- end }}
+    text: |-
+     {{ range .Alerts -}}
+     *Alert:* {{ .Annotations.title }}{{ if .Labels.severity }} - `{{ .Labels.severity }}`{{ end }}
+     *Description:* {{ .Annotations.description }}
+     *Details:*
+       {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+       {{ end }}
+     {{ end }}     

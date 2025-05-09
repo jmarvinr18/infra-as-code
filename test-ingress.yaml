@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  creationTimestamp: "2025-05-05T08:58:38Z"
+  generation: 1
+  name: demo
+  namespace: default
+  resourceVersion: "81071"
+  uid: f1771855-2c86-4a13-990b-e529a88d3dc9
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: www.demo.io
+    http:
+      paths:
+      - backend:
+          service:
+            name: demo
+            port:
+              number: 80
+        path: /
+        pathType: Exact
+status:
+  loadBalancer:
+    ingress:
+    - hostname: af33b3daecc28498a9b6d1cd62f5e1fd-1275740430.ap-southeast-1.elb.amazonaws.com

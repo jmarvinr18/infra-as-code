@@ -1,0 +1,17 @@
+---
+- name: Provisioning the server requirements
+  hosts: all
+  become: true
+  vars:
+    apache_config_files:
+      - "site.conf"
+  roles:
+    ## Execute build and deploy script
+    - role: "/Users/rouvinramoda/Documents/xctuality/devops/infra-as-code/ansible/roles/apache2"
+      vars:
+        SOURCE_PATH: "/Users/rouvinramoda/Documents/xctuality/devops/infra-as-code/terraform/provider/aws/environments/global-devsecops-env/ec2/jenkins/assets/apache2"
+        FILENAME: "{{ apache_config_files }}"
+    - role: /Users/rouvinramoda/Documents/xctuality/devops/infra-as-code/ansible/roles/docker
+    - role: "/Users/rouvinramoda/Documents/xctuality/devops/infra-as-code/ansible/roles/execute-command"
+      vars:
+        COMMAND: "/Users/rouvinramoda/Documents/xctuality/devops/infra-as-code/terraform/provider/aws/environments/global-devsecops-env/ec2/jenkins/assets/scripts/jenkins-container.sh"

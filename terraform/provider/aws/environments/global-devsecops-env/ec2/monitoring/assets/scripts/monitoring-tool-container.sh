@@ -41,6 +41,18 @@ docker run --rm \
 # END BLACKBOX SETUP =========================================================
 
 
+# START ALERTMANAGER SETUP =========================================================
+
+docker run --name alertmanager \
+  -d -p 127.0.0.1:9093:9093 \
+  -v ./prometheus/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml \
+  quay.io/prometheus/alertmanager 
+
+
+# END ALERTMANAGER SETUP =========================================================
+
+
+
 # START GRAFANA SETUP =========================================================
 
 # create a directory for your data

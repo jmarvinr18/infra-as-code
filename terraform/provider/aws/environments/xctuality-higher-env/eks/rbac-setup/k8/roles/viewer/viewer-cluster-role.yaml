@@ -5,5 +5,5 @@ metadata:
 
 rules:
   - apiGroups: ["*"]
-    resources: ["deployments", "configmaps", "pods", "secrets", "services"]
-    verbs: ["get", "list", "watch"]
+    resources: ["deployments", "configmaps", "pods", "secrets", "services", "namespaces"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
