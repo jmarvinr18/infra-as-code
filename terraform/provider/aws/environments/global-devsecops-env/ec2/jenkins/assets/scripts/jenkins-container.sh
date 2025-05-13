@@ -32,4 +32,4 @@ docker run \
   --publish 50000:50000 \
   --volume jenkins-data:/var/jenkins_home \
   --volume jenkins-docker-certs:/certs/client:ro \
-  jmarvinr/jmr-jenkins:1.2
+  jmarvinr/jmr-jenkins:1.4
