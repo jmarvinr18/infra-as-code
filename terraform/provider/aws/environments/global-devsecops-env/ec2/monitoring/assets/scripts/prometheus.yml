@@ -5,15 +5,15 @@ global:
   # scrape_timeout is set to the global default (10s).
 
 # Alertmanager configuration
-#alerting:
-#  alertmanagers:
-#    - static_configs:
-#        - targets:
-#           - localhost:9093
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - localhost:9093
 
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
-#rule_files:
-#   - "rules/rules.yml"
+rule_files:
+  - "rules/rules.yml"
 
 # A scrape configuration containing exactly one endpoint to scrape:
 # Here it's Prometheus itself.
@@ -27,23 +27,35 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 
-  - job_name: 'Website Status'
+  - job_name: "METAFARMS_EC2_SERVER:NODE_EXPORTER"
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+      - targets: ["18.136.200.167:9100"]
+
+  - job_name: "Website Status"
     metrics_path: /probe
     params:
-      module: [http_2xx]  # Look for a HTTP 200 response.
+      module: [http_2xx] # Look for a HTTP 200 response.
     static_configs:
       - targets:
-        - https://xctualyfe.com
-        - https://xctuality.com
-        - https://metafarms.com
-        - https://earn.metafarms.com
+          - https://toureast.xctualyfe.com
+          - https://explore.toureast.net
+          - https://xctualyfe.com
+          - https://xctuality.com
+          - https://metafarms.io
+          - https://earn.metafarms.io
+          - https://qr.xctuality.com
+          - https://api-qr-generator.xctuality.com
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
       - source_labels: [__param_target]
         target_label: instance
       - target_label: __address__
-        replacement: 127.0.0.1:9115  # The blackbox exporter's real hostname:port.
-  - job_name: 'blackbox_exporter'  # collect blackbox exporter's operational metrics.
+        replacement: 52.221.227.107:9115 # The blackbox exporter's real hostname:port.
+  - job_name: "blackbox_exporter" # collect blackbox exporter's operational metrics.
     static_configs:
-      - targets: ['127.0.0.1:9115']
+      - targets: ["52.221.227.107:9115"]

@@ -1,0 +1,36 @@
+[
+        {
+            "name": "dingdong-production-app",
+            "image": "664812007902.dkr.ecr.ap-southeast-1.amazonaws.com/prod-dingdong-admin:latest",
+            "cpu": 1024,
+            "portMappings": [
+                {
+                    "name": "dingdong-production-app-8080-tcp",
+                    "containerPort": 3000,
+                    "hostPort": 3000,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "environment": [],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "workingDirectory": "/var/www/html",
+            "ulimits": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/dingdong-production-td",
+                    "mode": "non-blocking",
+                    "awslogs-create-group": "true",
+                    "max-buffer-size": "25m",
+                    "awslogs-region": "ap-southeast-1",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            },
+            "systemControls": []
+        }
+]
