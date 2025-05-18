@@ -64,28 +64,28 @@ variable "region" {
 }
 
 
-# variable "cloudflare_api_token" {
-#   type = string
-# }
+variable "cloudflare_api_token" {
+  type = string
+}
 
-# variable "zone_id" {
-#   type = string
-# }
+variable "zone_id" {
+  type = string
+}
 
-# variable "name" {
-#   type = string
-# }
+variable "name" {
+  type = string
+}
 
-# variable "proxied" {
-#   type = bool
-# }
+variable "proxied" {
+  type = bool
+}
 
-# variable "type" {
-#   type = string
-# }
+variable "type" {
+  type = string
+}
 
-# variable "ttl" {
-#   type = number
-# }
+variable "ttl" {
+  type = number
+}
 
 

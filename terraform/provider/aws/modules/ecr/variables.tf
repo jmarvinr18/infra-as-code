@@ -1,5 +1,5 @@
 variable "repos" {
-  type = map(any)
+  type = list(string)
 }
 
 variable "policy" {
