@@ -5,27 +5,6 @@
 module "cluster" {
   source           = "../../../../../modules/ecs/cluster"
   app_cluster_name = var.app_cluster_name
-
-  capacity_provider = var.capacity_provider
-
-  capacity_provider_name = ""
-
-  asg_capacity_provider = {
-    name                           = var.asg_capacity_provider[0].name
-    auto_scaling_group_arn         = data.aws_autoscaling_group.name.arn
-    managed_termination_protection = var.asg_capacity_provider[0].auto_scaling_group_provider.managed_termination_protection
-
-    managed_scaling = {
-      maximum_scaling_step_size = var.asg_capacity_provider[0].auto_scaling_group_provider.managed_scaling.maximum_scaling_step_size
-      minimum_scaling_step_size = var.asg_capacity_provider[0].auto_scaling_group_provider.managed_scaling.minimum_scaling_step_size
-
-      status          = var.asg_capacity_provider[0].auto_scaling_group_provider.managed_scaling.status
-      target_capacity = var.asg_capacity_provider[0].auto_scaling_group_provider.managed_scaling.target_capacity
-    }
-  }
-
-  # depends_on = [ module.asg ]
-
 }
 
 
@@ -35,11 +14,11 @@ module "cluster" {
 ##############################################################
 
 module "target_group" {
-  source                     = "../../../../../modules/elb/lb_target_group"
-  name                       = var.target_group_name
-  port                       = var.target_group_port
-  protocol                   = var.target_group_protocol
-  target_type                = var.target_type
+  source      = "../../../../../modules/elb/lb_target_group"
+  name        = var.target_group_name
+  port        = var.target_group_port
+  protocol    = var.target_group_protocol
+  target_type = var.target_type
 
   vpc_id                     = data.aws_vpc.selected.id
   instance_target_group_port = var.instance_target_group_port
@@ -74,7 +53,6 @@ module "load_balancer" {
 
   tags = var.tags
 
-  depends_on = [module.launch_template]
 }
 
 module "listener_and_routing" {

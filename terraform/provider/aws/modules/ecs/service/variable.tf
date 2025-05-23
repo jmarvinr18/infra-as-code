@@ -1,22 +1,22 @@
 variable "name" {
-  type        = string
+  type = string
 }
 
 variable "aws_ecs_cluster_id" {
-  type        = string
+  type = string
 }
 
 variable "aws_ecs_task_definition_arn" {
-  type        = string
+  type = string
 }
 
 variable "desired_count" {
-  type        = number
+  type    = number
   default = 3
 }
 
 variable "iam_role_arn" {
-  type        = string
+  type = string
 }
 
 # variable "depends_on" {
@@ -24,11 +24,11 @@ variable "iam_role_arn" {
 #   default = []
 # }
 variable "scheduling_strategy" {
-  type        = string
+  type    = string
   default = "DAEMON"
 }
 variable "force_new_deployment" {
-  type        = bool
+  type    = bool
   default = true
 }
 # variable "ordered_placement_strategy" {

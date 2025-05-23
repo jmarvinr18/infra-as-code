@@ -6,25 +6,29 @@ variable "auto_scaling_group_arn" {
 }
 
 variable "managed_termination_protection" {
-  type = string
+  type    = string
   default = "ENABLED"
 }
 
 variable "maximum_scaling_step_size" {
-  type = number
+  type    = number
   default = 1000
 }
 
 variable "minimum_scaling_step_size" {
-  type = number
+  type    = number
   default = 1
 }
 variable "status" {
-  type = number
+  type    = number
   default = "ENABLED"
 }
 
 variable "target_capacity" {
-  type = number
+  type    = number
   default = 10
+}
+
+variable "cluster_name" {
+  type = string
 }
