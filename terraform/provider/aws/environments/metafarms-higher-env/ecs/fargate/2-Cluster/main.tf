@@ -34,7 +34,6 @@ module "target_group" {
   }
   tags = var.tags
 
-  depends_on = [module.launch_template, module.ec2]
 }
 
 module "load_balancer" {
@@ -74,5 +73,5 @@ module "listener_and_routing" {
   redirect_protocol    = each.value.default_action.redirect.protocol
   redirect_status_code = each.value.default_action.redirect.redirect_status_code
 
-  depends_on = [module.launch_template]
+  # depends_on = [module.launch_template]
 }

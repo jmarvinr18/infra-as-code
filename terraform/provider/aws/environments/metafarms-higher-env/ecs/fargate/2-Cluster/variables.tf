@@ -3,28 +3,6 @@ variable "app_cluster_name" {
   type = string
 }
 
-variable "capacity_provider" {
-  type = list(string)
-}
-
-
-variable "asg_capacity_provider" {
-  type = list(object({
-    name = string
-    auto_scaling_group_provider = object({
-      auto_scaling_group_arn         = string
-      managed_termination_protection = string
-
-      managed_scaling = object({
-        maximum_scaling_step_size = number
-        minimum_scaling_step_size = number
-        status                    = string
-        target_capacity           = number
-      })
-    })
-
-  }))
-}
 
 #### LOAD BALANCER CREATION VARIABLES ####
 
@@ -88,25 +66,6 @@ variable "elb_listeners" {
   }))
 }
 
-variable "asg_name" {
-  type = string
-}
-
-variable "asg_availability_zones" {
-  type = list(string)
-}
-
-variable "desired_capacity" {
-  type = number
-}
-
-variable "max_size" {
-  type = number
-}
-
-variable "min_size" {
-  type = number
-}
 
 
 variable "tags" {
