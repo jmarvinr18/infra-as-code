@@ -26,44 +26,88 @@ variable "asg_capacity_provider" {
   }))
 }
 
+#### LOAD BALANCER CREATION VARIABLES ####
 
-
-#### SERVICE CREATION VARIABLES ####
-
-variable "network_mode" {
+variable "target_group_name" {
   type = string
 }
 
-variable "launch_type" {
+variable "target_group_port" {
+  type = number
+}
+
+variable "target_group_protocol" {
   type = string
 }
 
-variable "service_name" {
+variable "target_type" {
   type = string
 }
 
-variable "td_name" {
+
+variable "instance_target_group_port" {
+  type = number
+}
+
+variable "health_check" {
+  type = object({
+    path                = string
+    port                = string
+    healthy_threshold   = number
+    unhealthy_threshold = number
+  })
+}
+
+variable "load_balancer_name" {
   type = string
 }
 
-variable "cluster_name" {
+
+variable "certificate_arn" {
   type = string
 }
 
-variable "ecs_role_name" {
-  type = string
-}
-variable "ecs_target_group" {
+variable "ssl_policy" {
   type = string
 }
 
-variable "container_name" {
+variable "elb_listeners" {
+  type = list(object({
+    port     = string
+    protocol = string
+
+    default_action = object({
+      type = string
+
+      redirect = object({
+        port                 = string
+        protocol             = string
+        redirect_status_code = string
+      })
+    })
+  }))
+}
+
+variable "asg_name" {
   type = string
 }
 
-variable "container_port" {
-  type = string
+variable "asg_availability_zones" {
+  type = list(string)
 }
+
+variable "desired_capacity" {
+  type = number
+}
+
+variable "max_size" {
+  type = number
+}
+
+variable "min_size" {
+  type = number
+}
+
 
 variable "tags" {
   type = map(string)

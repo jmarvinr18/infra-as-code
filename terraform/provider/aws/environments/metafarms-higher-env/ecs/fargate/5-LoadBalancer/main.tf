@@ -1,36 +1,4 @@
 ##############################################################
-##                     Cluster Creation                     ##
-##############################################################
-
-module "cluster" {
-  source           = "../../../../../modules/ecs/cluster"
-  app_cluster_name = var.app_cluster_name
-
-  capacity_provider = var.capacity_provider
-
-  capacity_provider_name = ""
-
-  asg_capacity_provider = {
-    name                           = var.asg_capacity_provider[0].name
-    auto_scaling_group_arn         = data.aws_autoscaling_group.name.arn
-    managed_termination_protection = var.asg_capacity_provider[0].auto_scaling_group_provider.managed_termination_protection
-
-    managed_scaling = {
-      maximum_scaling_step_size = var.asg_capacity_provider[0].auto_scaling_group_provider.managed_scaling.maximum_scaling_step_size
-      minimum_scaling_step_size = var.asg_capacity_provider[0].auto_scaling_group_provider.managed_scaling.minimum_scaling_step_size
-
-      status          = var.asg_capacity_provider[0].auto_scaling_group_provider.managed_scaling.status
-      target_capacity = var.asg_capacity_provider[0].auto_scaling_group_provider.managed_scaling.target_capacity
-    }
-  }
-
-  # depends_on = [ module.asg ]
-
-}
-
-
-
-##############################################################
 ##                    Load Balancer Creation                ##
 ##############################################################
 

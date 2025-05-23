@@ -150,6 +150,7 @@ module "target_group" {
   name                       = var.target_group_name
   port                       = var.target_group_port
   protocol                   = var.target_group_protocol
+  target_type                = var.target_type
 
   vpc_id                     = data.aws_vpc.selected.id
   instance_target_group_port = var.instance_target_group_port
