@@ -15,9 +15,9 @@ variable "desired_count" {
   default = 3
 }
 
-variable "iam_role_arn" {
-  type = string
-}
+# variable "iam_role_arn" {
+#   type = string
+# }
 
 # variable "depends_on" {
 #   type        = list(string)
@@ -25,7 +25,6 @@ variable "iam_role_arn" {
 # }
 variable "scheduling_strategy" {
   type    = string
-  default = "DAEMON"
 }
 variable "force_new_deployment" {
   type    = bool
@@ -60,4 +59,11 @@ variable "container_name" {
 
 variable "container_port" {
   type = number
+}
+
+variable "public_subnet_ids" {
+  type = list(string)
+}
+variable "security_groups" {
+  type = list(string)
 }

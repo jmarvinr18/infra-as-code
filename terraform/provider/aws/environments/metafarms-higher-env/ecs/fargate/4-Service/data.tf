@@ -7,10 +7,17 @@ data "aws_iam_role" "ServiceRoleForECS" {
 }
 
 
-data "aws_vpc" "this" {
-  tags = {
-    Name = var.vpc_name
-  }
+data "aws_ecs_cluster" "this" {
+  cluster_name = var.cluster_name
+}
+
+data "aws_ecs_task_definition" "this" {
+  task_definition = var.td_name
+}
+
+
+data "aws_lb_target_group" "this" {
+  tags = var.tags
 }
 
 data "aws_subnets" "this" {
@@ -22,4 +29,11 @@ data "aws_subnets" "this" {
     name   = "tag:Tier"
     values = ["public"]
   }
+}
+
+data "aws_security_groups" "this" {
+  filter {
+    name   = "tag:Name"
+    values = ["metafarms-production-ecs"]
+  }  
 }

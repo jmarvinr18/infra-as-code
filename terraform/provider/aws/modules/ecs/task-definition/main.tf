@@ -8,8 +8,8 @@ resource "aws_ecs_task_definition" "this" {
   cpu                      = var.cpu
   execution_role_arn       = var.execution_role_arn
 
-  volume {
-    name      = "service-storage"
-    host_path = "/ecs/service-storage"
-  }
+  # volume {
+  #   name      = "service-storage"
+  #   host_path = "/ecs/service-storage"
+  # }
 }

@@ -9,7 +9,8 @@ module "td" {
   container_definitions = "${path.module}/task-definition.json"
 
   network_mode             = var.network_mode
-  requires_compatibilities = ["EC2", "FARGATE"]
-  cpu                      = 1024
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = var.cpu
+  memory = var.memory
 }
 

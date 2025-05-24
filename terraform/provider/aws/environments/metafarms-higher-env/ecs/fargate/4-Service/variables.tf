@@ -1,9 +1,21 @@
 
 
 
+
 #### SERVICE CREATION VARIABLES ####
 
-variable "network_mode" {
+
+variable "launch_type" {
+  type = string
+}
+
+variable "scheduling_strategy" {
+  type = string
+}
+variable "cluster_name" {
+  type = string
+}
+variable "service_name" {
   type = string
 }
 
@@ -11,12 +23,12 @@ variable "td_name" {
   type = string
 }
 
-variable "cpu" {
-  type = number
+variable "container_name" {
+  type = string
 }
 
-variable "memory" {
-  type = number
+variable "container_port" {
+  type = string
 }
 
 variable "tags" {
@@ -32,4 +44,3 @@ variable "region" {
   type        = string
   description = "aws region"
 }
-

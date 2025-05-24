@@ -13,6 +13,15 @@ module "cluster" {
 ##                    Load Balancer Creation                ##
 ##############################################################
 
+module "sg" {
+  source              = "../../../../../modules/sg"
+  security_group_name = var.security_group_name
+  ingress_rules       = var.ingress_rules
+  vpc_id              = data.aws_vpc.this.id
+  tags                = var.tags
+}
+
+
 module "target_group" {
   source      = "../../../../../modules/elb/lb_target_group"
   name        = var.target_group_name
@@ -20,10 +29,7 @@ module "target_group" {
   protocol    = var.target_group_protocol
   target_type = var.target_type
 
-  vpc_id                     = data.aws_vpc.selected.id
-  instance_target_group_port = var.instance_target_group_port
-  aws_instance_target_id     = module.ec2.id
-
+  vpc_id                     = data.aws_vpc.this.id
 
   health_check = {
     path                = var.health_check.path
@@ -39,8 +45,8 @@ module "target_group" {
 module "load_balancer" {
   source                     = "../../../../../modules/elb/lb"
   name                       = var.load_balancer_name
-  security_groups            = [data.aws_security_group.this.id]
-  subnets                    = [for i in data.aws_subnets.selected.ids : i]
+  security_groups            = [module.sg.id]
+  subnets                    = [for i in data.aws_subnets.this.ids : i]
   enable_deletion_protection = false
 
 

@@ -18,13 +18,6 @@ variable "vpc_id" {
   type = string
 }
 
-variable "aws_instance_target_id" {
-  type = string
-}
-
-variable "instance_target_group_port" {
-  type = string
-}
 
 variable "health_check" {
   type = object({
