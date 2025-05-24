@@ -12,7 +12,6 @@ variable "aws_ecs_task_definition_arn" {
 
 variable "desired_count" {
   type    = number
-  default = 3
 }
 
 # variable "iam_role_arn" {

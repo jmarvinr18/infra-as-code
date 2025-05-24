@@ -30,6 +30,9 @@ variable "container_name" {
 variable "container_port" {
   type = string
 }
+variable "desired_count" {
+  type = number
+}
 
 variable "tags" {
   type = map(string)

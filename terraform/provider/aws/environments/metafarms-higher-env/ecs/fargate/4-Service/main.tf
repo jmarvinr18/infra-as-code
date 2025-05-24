@@ -9,8 +9,10 @@ module "ecs-service" {
   name                        = var.service_name
   aws_ecs_cluster_id          = data.aws_ecs_cluster.this.id
   aws_ecs_task_definition_arn = data.aws_ecs_task_definition.this.arn
+  desired_count = var.desired_count
   scheduling_strategy = var.scheduling_strategy
   # iam_role_arn                = data.aws_iam_role.ServiceRoleForECS.arn
+
 
 
 
