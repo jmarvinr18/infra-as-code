@@ -2,18 +2,18 @@
 
 
 echo """
-    ##########################
-    ##  Destroying Service  ##
-    ##########################
+##########################
+##  Destroying Service  ##
+##########################
 """ 
 terraform -chdir=/mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/terraform/provider/aws/environments/metafarms-higher-env/ecs/fargate/4-Service destroy -auto-approve -lock=false
 
 
 
 echo """
-    ###################################
-    ##  Destroying Task Definitions  ##
-    ###################################
+###################################
+##  Destroying Task Definitions  ##
+###################################
 """ 
 
 
@@ -22,18 +22,18 @@ terraform -chdir=/mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/te
 
 
 echo """
-    ##########################
-    ##  Destroying Cluster  ##
-    ##########################
+##########################
+##  Destroying Cluster  ##
+##########################
 """ 
 
 
 terraform -chdir=/mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/terraform/provider/aws/environments/metafarms-higher-env/ecs/fargate/2-Cluster destroy -auto-approve -lock=false
 
 echo """
-    ############################
-    ##  Destroying ECS Roles  ##
-    ############################
+############################
+##  Destroying ECS Roles  ##
+############################
 """ 
 
 terraform -chdir=/mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/terraform/provider/aws/environments/metafarms-higher-env/ecs/fargate/1-Role destroy -auto-approve -lock=false
