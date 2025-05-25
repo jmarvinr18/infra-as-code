@@ -27,3 +27,20 @@ module "ecs-service" {
   tags = var.tags
 }
 
+
+
+
+##############################################################
+##                    Auto Scaling                          ##
+##############################################################
+# "service/${aws_ecs_cluster.example.name}/${aws_ecs_service.example.name}"
+module "ecs-autoscaling" {
+  source = "../../../../../modules/app_autoscaling"
+
+  min_capacity = var.min_capacity
+  max_capacity = var.max_capacity
+  aws_appautoscaling_policy_name = var.aws_appautoscaling_policy_name
+  policy_type = var.policy_type
+  resource_id = "service/${data.aws_ecs_cluster.this.cluster_name}/${var.service_name}"
+  
+}

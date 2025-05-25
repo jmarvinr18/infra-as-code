@@ -11,7 +11,7 @@ variable "aws_ecs_task_definition_arn" {
 }
 
 variable "desired_count" {
-  type    = number
+  type = number
 }
 
 # variable "iam_role_arn" {
@@ -23,7 +23,7 @@ variable "desired_count" {
 #   default = []
 # }
 variable "scheduling_strategy" {
-  type    = string
+  type = string
 }
 variable "force_new_deployment" {
   type    = bool
@@ -43,9 +43,7 @@ variable "target_group_arn" {
 
 
 variable "tags" {
-  description = "A map of tags to add to all resources"
-  type        = map(string)
-  default     = {}
+  type = map(string)
 }
 
 variable "launch_type" {

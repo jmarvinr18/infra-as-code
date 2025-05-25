@@ -34,6 +34,25 @@ variable "desired_count" {
   type = number
 }
 
+
+#### AUTO SCALING VARIABLES ####
+
+variable "min_capacity" {
+  type = number
+}
+
+variable "max_capacity" {
+  type = number
+}
+
+variable "aws_appautoscaling_policy_name" {
+  type = string
+}
+
+variable "policy_type" {
+  type = string
+}
+
 variable "tags" {
   type = map(string)
 }

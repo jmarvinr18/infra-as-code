@@ -5,6 +5,8 @@
 module "cluster" {
   source           = "../../../../../modules/ecs/cluster"
   app_cluster_name = var.app_cluster_name
+  tags = var.tags
+  
 }
 
 
