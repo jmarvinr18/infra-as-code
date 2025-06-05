@@ -1,10 +1,11 @@
 resource "aws_route_table" "this" {
-  vpc_id = aws_vpc.main.id
+  for_each = { for i, route in var.route_tables : i => route }
+  vpc_id = var.vpc_id
 
   route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat.id
+    cidr_block     = each.value.cidr_block
+    gateway_id = each.value.gateway_id
   }
 
-  tags = var.tags
+  tags = merge(each.value.zone_tag, var.tags)
 }

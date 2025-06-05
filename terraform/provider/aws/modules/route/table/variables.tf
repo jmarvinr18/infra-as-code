@@ -4,18 +4,14 @@ variable "vpc_id" {
 }
 
 
-variable "subnets" {
-  type = list(object({
-      cidr_block = string
-      availability_zone = string
-      type = map(string)
-  }))
-}
-
 variable "tags" {
   type = map(string)
 }
 
 variable "route_tables" {
-  
+  type = list(object({
+    cidr_block = string
+    gateway_id = string
+    zone_tag = map(string)
+  }))
 }

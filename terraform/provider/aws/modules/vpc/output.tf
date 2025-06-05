@@ -6,6 +6,6 @@ output "arn" {
   value = aws_vpc.this.arn
 }
 
-output "arn" {
+output "cidr_block" {
   value = aws_vpc.this.cidr_block
 }
