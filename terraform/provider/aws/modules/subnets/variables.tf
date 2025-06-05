@@ -11,11 +11,3 @@ variable "subnets" {
       type = map(string)
   }))
 }
-
-variable "tags" {
-  type = map(string)
-}
-
-variable "route_tables" {
-  
-}

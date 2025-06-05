@@ -7,7 +7,7 @@ resource "aws_iam_instance_profile" "this" {
 resource "aws_iam_role" "this" {
   name = var.role_name
 
-  assume_role_policy = file(var.assume_role_policy)
+  assume_role_policy = var.assume_role_policy_type == "string" ? "" : file(var.assume_role_policy)
 
   dynamic "inline_policy" {
     for_each = [for rule in var.inline_policy : rule if rule.name != ""]

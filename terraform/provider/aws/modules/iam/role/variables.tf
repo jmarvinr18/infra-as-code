@@ -7,6 +7,7 @@ variable "role" {
   default = ""
 }
 
+
 variable "policy_arn" {
   type = string
   default = ""
@@ -23,6 +24,11 @@ variable "inline_policy" {
       name = ""
       file = ""    
   }]
+}
+
+variable "assume_role_policy_type" {
+  type = string
+  default = "file"
 }
 
 variable "assume_role_policy" {

@@ -1,11 +1,10 @@
-resource "aws_subnet" "this" {
+resource "aws_route_table" "this" {
+  vpc_id = aws_vpc.main.id
 
-  for_each = {for i, subnet in var.subnets : i => subnet}
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat.id
+  }
 
-  vpc_id            = var.vpc_id
-  cidr_block        = each.value.cidr_block
-  availability_zone = each.value.availability_zone
-
-  tags = each.value.tags
-  
+  tags = var.tags
 }
