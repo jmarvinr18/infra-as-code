@@ -63,7 +63,7 @@ module "ServiceRoleForECS" {
 }
 
 module "ECSServiceRolePolicy" {
-  source           = "../../../../../modules/iam/policy"
+  source           = "../../../../../modules/iam/role_policy"
   name             = var.ecs_service_role_policy_name
   policy_file_name = var.ecs_service_policy_path
   role_id          = module.ServiceRoleForECS.id

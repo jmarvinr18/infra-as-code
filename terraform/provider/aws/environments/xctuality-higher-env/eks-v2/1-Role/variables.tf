@@ -1,0 +1,48 @@
+variable "region" {
+  type = string
+}
+
+
+variable "eks_assume_role_policy" {
+  type = string
+}
+
+
+variable "eks_nodes_assume_role_policy" {
+  type = string
+}
+
+
+variable "role_name" {
+  type = string
+}
+variable "tags" {
+  type = map(string)
+}
+
+variable "eks_policy_attachments" {
+  type = list(string)
+}
+
+variable "eks_node_policy_attachments" {
+  type = list(string)
+}
+
+variable "aws_lbc_policy_name" {
+  type = string
+}
+
+variable "eks_pods_service_file_name" {
+  type = string
+}
+variable "lbc_policy_file_name" {
+  type = string
+}
+
+variable "cluster_autoscaler_policy_file_name" {
+  type = string
+}
+
+variable "eks_name" {
+  type = string
+}

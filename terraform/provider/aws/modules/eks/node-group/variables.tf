@@ -2,23 +2,20 @@ variable "cluster_name" {
   type = string
 }
 
-variable "eks_cluster_version" {
-  type    = string
-  default = "1.29"
+variable "version" {
+  type = string
 }
 
 variable "node_group_name" {
   type = string
 }
 
-variable "ssh_key" {
-  type    = string
-  default = "eks-node-key"
+variable "node_role_arn" {
+  type = string
 }
 
-variable "volume_size" {
-  type    = string
-  default = "50"
+variable "subnet_ids" {
+  type = list(string)
 }
 
 variable "capacity_type" {
@@ -29,11 +26,26 @@ variable "instance_types" {
   type = list(string)
 }
 
-variable "target_subnets" {
-  type = list(string)
+variable "scaling_config" {
+  type = object({
+    desired_size = number
+    max_size = number
+    min_size = number
+  })
 }
 
-variable "sysctl" {
-  type    = string
-  default = ""
+variable "update_config" {
+  type = object({
+    max_unavailable = number
+  })
+}
+
+variable "labels" {
+  type = object({
+    role = string
+  })
+}
+
+variable "tags" {
+  type = map(string)
 }
