@@ -13,14 +13,20 @@ variable "eks_nodes_assume_role_policy" {
 }
 
 
-variable "role_name" {
+variable "eks_cluster_role_name" {
   type = string
 }
+
+variable "eks_node_role_name" {
+  type = string
+}
+
+
 variable "tags" {
   type = map(string)
 }
 
-variable "eks_policy_attachments" {
+variable "eks_cluster_policy_attachments" {
   type = list(string)
 }
 

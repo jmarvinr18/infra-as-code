@@ -1,5 +1,5 @@
-resource "aws_eks_cluster" "eks" {
-  name     = var.eks_version
+resource "aws_eks_cluster" "this" {
+  name     = var.eks_cluster_name
   version  = var.eks_version
   role_arn = var.role_arn
 
@@ -16,4 +16,5 @@ resource "aws_eks_cluster" "eks" {
     bootstrap_cluster_creator_admin_permissions = var.access_config.bootstrap_cluster_creator_admin_permissions
   }
   
+  tags = var.tags
 }

@@ -2,10 +2,10 @@
 
 ##### EKS CLUSTER ROLE & POLICIES
 
-module "eks_role" {
+module "eks_cluster_role" {
   source = "../../../../modules/iam/role"
 
-  role_name = var.role_name
+  role_name = var.eks_cluster_role_name
 
   assume_role_policy = var.eks_assume_role_policy
 
@@ -16,9 +16,9 @@ module "eks_role" {
 module "eks_policy_attachment" {
   source = "../../../../modules/iam/policy_attachment"
 
-  policy_attachments = var.eks_policy_attachments
+  policy_attachments = var.eks_cluster_policy_attachments
 
-  role = module.eks_role.name
+  role = module.eks_cluster_role.name
 }
 
 
@@ -27,7 +27,7 @@ module "eks_policy_attachment" {
 module "eks_nodes_role" {
   source = "../../../../modules/iam/role"
 
-  role_name = var.role_name
+  role_name = var.eks_node_role_name
 
   assume_role_policy = var.eks_nodes_assume_role_policy
 

@@ -25,3 +25,7 @@ variable "access_config" {
     bootstrap_cluster_creator_admin_permissions = bool
   })
 }
+
+variable "tags" {
+  type = map(string)
+}

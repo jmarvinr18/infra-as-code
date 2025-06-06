@@ -46,7 +46,7 @@ module "eks_subnets" {
 
 module "eks_nat" {
   source        = "../../../../modules/nat_gateway"
-  subnet_id     = data.aws_subnets.public_zone_1.ids[0]
+  subnet_id     = local.public_zone_1[0].id
   allocation_id = module.eks_eip.id
   tags          = var.tags
 
@@ -88,20 +88,20 @@ module "route_table_association" {
   source = "../../../../modules/route/table-association"
   route_table_associations = [
     {
-      subnet_id      = data.aws_subnets.public_zone_1.ids[0]
-      route_table_id = data.aws_route_tables.public.ids[0]
+      subnet_id      = local.public_zone_1[0].id
+      route_table_id = local.route_table_public[0].id
     },
     {
-      subnet_id      = data.aws_subnets.public_zone_2.ids[0]
-      route_table_id = data.aws_route_tables.public.ids[0]
+      subnet_id      = local.public_zone_2[0].id
+      route_table_id = local.route_table_public[0].id
     },    
     {
-      subnet_id      = data.aws_subnets.private_zone_1.ids[0]
-      route_table_id = data.aws_route_tables.private.ids[0]
+      subnet_id      = local.private_zone_1[0].id
+      route_table_id = local.route_table_private[0].id
     },
     {
-      subnet_id      = data.aws_subnets.private_zone_2.ids[0]
-      route_table_id = data.aws_route_tables.private.ids[0]
+      subnet_id      = local.private_zone_2[0].id
+      route_table_id = local.route_table_private[0].id
     }    
   ]
 
