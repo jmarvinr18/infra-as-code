@@ -5,6 +5,10 @@ variable "helm_releases" {
       chart = string
       namespace = string
       helm_version = string
-      helm_values = string
+      helm_values = list(string)
+      set = list(object({
+        name  = string
+        value = string
+      }))
   }))
 }

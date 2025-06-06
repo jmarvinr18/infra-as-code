@@ -67,7 +67,7 @@ module "aws_lbc_policy_attachment" {
   source             = "../../../../modules/iam/policy_attachment"
   policy_attachments = [module.aws_lbc_policy.arn]
 
-  role = module.eks_nodes_role.name
+  role = module.eks_lbc_role.name
 
 }
 
@@ -77,7 +77,7 @@ module "aws_lbc_policy_attachment" {
 module "cluster_autoscaler_role" {
   source = "../../../../modules/iam/role"
 
-  role_name = "${var.eks_name}-cluster-autoscaler"
+  role_name = "${var.eks_cluster_name}-cluster-autoscaler"
 
   assume_role_policy = var.eks_pods_service_file_name
 
@@ -87,7 +87,7 @@ module "cluster_autoscaler_role" {
 
 module "cluster_autoscaler_policy" {
   source           = "../../../../modules/iam/policy"
-  name             = var.aws_lbc_policy_name
+  name             = var.aws_cluster_autoscaler_policy_name
   policy_file_name = var.cluster_autoscaler_policy_file_name
 }
 

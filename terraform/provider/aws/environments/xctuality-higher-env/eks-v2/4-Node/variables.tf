@@ -1,4 +1,20 @@
-variable "cluster_name" {
+
+
+
+variable "region" {
+  type = string
+  default = "value"
+}
+
+variable "tags" {
+  type = map(string)
+}
+
+variable "eks_node_role_name" {
+  type = string
+}
+
+variable "eks_cluster_name" {
   type = string
 }
 
@@ -10,13 +26,6 @@ variable "node_group_name" {
   type = string
 }
 
-variable "node_role_arn" {
-  type = string
-}
-
-variable "subnet_ids" {
-  type = list(string)
-}
 
 variable "capacity_type" {
   type = string
@@ -44,8 +53,4 @@ variable "labels" {
   type = object({
     role = string
   })
-}
-
-variable "tags" {
-  type = map(string)
 }

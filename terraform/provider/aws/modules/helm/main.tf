@@ -9,6 +9,16 @@ resource "helm_release" "this" {
   namespace  = each.value.namespace
   version    = each.value.helm_version
 
-  values     = each.value.helm_values
+  # values     = each.value.helm_values
+
+
+  dynamic "set" {
+    for_each = each.value.set
+
+    content { 
+      name  = set.value.name
+      value = set.value.value
+    }
+  }
 
 }

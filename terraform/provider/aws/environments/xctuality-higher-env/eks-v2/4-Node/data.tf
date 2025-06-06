@@ -28,6 +28,14 @@ data "aws_subnet" "private_zone_2" {
   }
 }
 
-data "aws_iam_role" "cluster_role" {
-  name = var.eks_cluster_role_name
+data "aws_iam_role" "node_role" {
+  name = var.eks_node_role_name
+}
+
+data "aws_eks_cluster" "this" {
+  name = var.eks_cluster_name
+}
+
+data "aws_eks_cluster_auth" "this" {
+  name = var.eks_cluster_name
 }

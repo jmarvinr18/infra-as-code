@@ -1,6 +1,6 @@
 resource "aws_eks_node_group" "this" {
   cluster_name    = var.cluster_name
-  version         = var.version
+  version         = var.eks_version
   node_group_name = var.node_group_name
   node_role_arn   = var.node_role_arn
 
@@ -25,5 +25,6 @@ resource "aws_eks_node_group" "this" {
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
   }
+  
   tags = var.tags
 }
