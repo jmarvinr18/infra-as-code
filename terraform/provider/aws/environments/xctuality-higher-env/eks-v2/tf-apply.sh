@@ -37,9 +37,9 @@ terraform -chdir=terraform/provider/aws/environments/xctuality-higher-env/eks-v2
 
 
 echo """
-############################
+##################################
 ##  Provisioning EKS HELM CHART ##
-############################
+##################################
 """ 
 terraform -chdir=terraform/provider/aws/environments/xctuality-higher-env/eks-v2/5-Helm init
 terraform -chdir=terraform/provider/aws/environments/xctuality-higher-env/eks-v2/5-Helm apply -auto-approve=true -lock=false -var-file=/mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/terraform/provider/aws/environments/xctuality-higher-env/eks-v2/terraform.tfvars -compact-warnings

@@ -4,6 +4,7 @@ variable "helm_releases" {
       helm_repository = string
       chart = string
       namespace = string
+      create_namespace = bool
       helm_version = string
       helm_values = list(string)
       set = list(object({

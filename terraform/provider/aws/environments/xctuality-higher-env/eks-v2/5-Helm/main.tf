@@ -1,11 +1,16 @@
-resource "aws_eks_pod_identity_association" "aws_lbc" {
-  cluster_name    = var.eks_cluster_name
-  namespace       = "kube-system"
+
+
+module "eks_pod_identity_association" {
+  source = "../../../../modules/eks/pod-identity-association"
+  
+  cluster_name = var.eks_cluster_name
+  namespace = "kube-system"
+  role_arn = data.aws_iam_role.lbc-role.arn
   service_account = "aws-load-balancer-controller"
-  role_arn        = data.aws_iam_role.lbc-role.arn
+
 }
 
-
+  
 
 module "helm_release" {
   source = "../../../../modules/helm"
@@ -17,6 +22,7 @@ module "helm_release" {
       chart = "metrics-server"
       namespace = "kube-system"
       helm_version = "3.12.1"
+      create_namespace = false
       helm_values = [file("${path.module}/values/metrics-server.yaml")]
       set = [{
           name  = ""
@@ -28,6 +34,7 @@ module "helm_release" {
       helm_repository = "https://kubernetes.github.io/autoscaler"
       chart = "cluster-autoscaler"
       namespace = "kube-system"
+      create_namespace = false
       helm_version = "9.37.0"
       helm_values = [""]
       set = [ 
@@ -50,7 +57,8 @@ module "helm_release" {
       helm_repository = "https://aws.github.io/eks-charts"
       chart = "aws-load-balancer-controller"
       namespace = "kube-system"
-      helm_version = "1.8.1"
+      create_namespace = false
+      helm_version = "1.13"
       helm_values = [""]
       set = [ 
         {
@@ -67,6 +75,21 @@ module "helm_release" {
         },
       ]
   }
-]
+  # {
+  #     helm_release_name = "external-nginx"
+  #     helm_repository = "https://kubernetes.github.io/ingress-nginx"
+  #     chart = "ingress-nginx"
+  #     namespace = "nginx"
+  #     create_namespace = true
+  #     helm_version = "4.10.1"
+  #     helm_values = [file("${path.module}/values/nginx-ingress.yaml")]
+  #     set = [{
+  #         name  = ""
+  #         value = ""
+  #     }]
+  # }  
 
+
+]
+  depends_on = [ module.eks_pod_identity_association ]
 }

@@ -8,8 +8,8 @@ resource "helm_release" "this" {
   chart      = each.value.chart
   namespace  = each.value.namespace
   version    = each.value.helm_version
-
-  # values     = each.value.helm_values
+  create_namespace = each.value.create_namespace
+  values     = each.value.helm_values
 
 
   dynamic "set" {
