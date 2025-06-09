@@ -9,3 +9,6 @@ variable "policy_file_name" {
 variable "role_id" {
   type = string
 }
+variable "policy_type" {
+  type = string
+}

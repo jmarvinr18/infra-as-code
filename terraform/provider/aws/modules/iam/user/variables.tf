@@ -14,22 +14,3 @@ variable "tags" {
     "name" = ""
   }
 }
-
-variable "aws_iam_policy_document" {
-  type = list(object({
-      name = string
-      file = string
-  }))
-
-  default = [{
-      name = ""
-      file = ""    
-  }]
-}
-
-variable "policy_details" {
-  type = list(object({
-      name = string
-      file = string
-  }))
-}

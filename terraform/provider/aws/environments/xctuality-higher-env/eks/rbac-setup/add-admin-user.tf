@@ -88,3 +88,6 @@ resource "aws_eks_access_entry" "admin" {
   principal_arn = aws_iam_role.eks_admin.arn
   kubernetes_groups = ["admin-group"]
 }
+
+
+# aws sts assume-role --role-arn arn:aws:iam::408897322877:role/staging-xct-higher-eks-admin --role-session-name manager-session --profile manager

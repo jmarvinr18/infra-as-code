@@ -2,6 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: xctuality-ingress
+  namespace: k8-sample
   annotations:
     # Ingress class to use the NGINX Ingress Controlle
     # AWS-specific annotations for SSL and the load balancer
@@ -22,9 +23,9 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: xcorp-app
+                name: myapp
                 port:
-                  number: 80
+                  number: 8080
     - host: toureast-test.xctuality.com
       http:
         paths:
@@ -34,7 +35,4 @@ spec:
               service:
                 name: toureast-app
                 port:
-                  number: 80                  
-
-
-                  
+                  number: 80

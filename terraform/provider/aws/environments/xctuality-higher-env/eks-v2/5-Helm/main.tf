@@ -73,8 +73,12 @@ module "helm_release" {
           name  = "vpcId"
           value = data.aws_vpc.eks.id
         },
+        {
+          name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+          value = data.aws_iam_role.lbc-role.arn
+        }        
       ]
-  }
+  },
   # {
   #     helm_release_name = "external-nginx"
   #     helm_repository = "https://kubernetes.github.io/ingress-nginx"

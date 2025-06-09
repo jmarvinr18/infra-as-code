@@ -45,4 +45,14 @@ terraform -chdir=terraform/provider/aws/environments/xctuality-higher-env/eks-v2
 terraform -chdir=terraform/provider/aws/environments/xctuality-higher-env/eks-v2/5-Helm apply -auto-approve=true -lock=false -var-file=/mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/terraform/provider/aws/environments/xctuality-higher-env/eks-v2/terraform.tfvars -compact-warnings
 
 
+echo """
+##################################
+##  Provisioning EKS RBAC       ##
+##################################
+""" 
+terraform -chdir=terraform/provider/aws/environments/xctuality-higher-env/eks-v2/6-RBAC init
+terraform -chdir=terraform/provider/aws/environments/xctuality-higher-env/eks-v2/6-RBAC apply -auto-approve=true -lock=false -var-file=/mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/terraform/provider/aws/environments/xctuality-higher-env/eks-v2/terraform.tfvars -compact-warnings
+
+
+
 aws eks update-kubeconfig --region ap-southeast-1 --name xct-higher-eks
