@@ -1,13 +1,3 @@
-
-module "oidc" {
-  source = "../../../../modules/iam/openid_connect_provider"
-  url = data.aws_eks_cluster.oidc.identity[0].oidc[0].issuer
-  client_id_list = [ "sts.amazonaws.com" ]
-  tags = var.tags
-  
-}
-
-
 module "eks_rbac" {
   source = "../../../../modules/eks/access-entry"
   eks_cluster_name = var.eks_cluster_name

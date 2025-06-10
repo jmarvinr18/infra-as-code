@@ -46,30 +46,30 @@ module "eks_node_policy_attachment" {
 
 ##### EKS LOAD BALANCER CONTROLLER ROLE & POLICIES
 
-module "eks_lbc_role" {
-  source = "../../../../modules/iam/role"
+# module "eks_lbc_role" {
+#   source = "../../../../modules/iam/role"
 
-  role_name = var.eks_lbc_role_name
+#   role_name = var.eks_lbc_role_name
 
-  assume_role_policy = var.eks_pods_service_file_name
+#   assume_role_policy = var.eks_pods_service_file_name
 
-  tags = var.tags
-}
+#   tags = var.tags
+# }
 
-module "aws_lbc_policy" {
-  source           = "../../../../modules/iam/policy"
-  name             = var.aws_lbc_policy_name
-  policy_file_name = var.lbc_policy_file_name
-}
+# module "aws_lbc_policy" {
+#   source           = "../../../../modules/iam/policy"
+#   name             = var.aws_lbc_policy_name
+#   policy_file_name = var.lbc_policy_file_name
+# }
 
 
-module "aws_lbc_policy_attachment" {
-  source             = "../../../../modules/iam/role_policy_attachment"
-  policy_attachments = [module.aws_lbc_policy.arn]
+# module "aws_lbc_policy_attachment" {
+#   source             = "../../../../modules/iam/role_policy_attachment"
+#   policy_attachments = [module.aws_lbc_policy.arn]
 
-  role = module.eks_lbc_role.name
+#   role = module.eks_lbc_role.name
 
-}
+# }
 
 
 ##### EKS CLUSTER AUTO SCALER ROLE & POLICIES

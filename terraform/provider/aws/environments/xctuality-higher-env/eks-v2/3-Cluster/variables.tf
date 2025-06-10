@@ -33,6 +33,19 @@ variable "access_config" {
   })
 }
 
+variable "eks_lbc_role_name" {
+  type = string
+}
+
+variable "aws_lbc_policy_name" {
+  type = string
+}
+
+variable "lbc_policy_file_name" {
+  type = string
+}
+
+
 variable "tags" {
   type = map(string)
 }

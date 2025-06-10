@@ -2,6 +2,14 @@
 
 echo """
 ############################
+##  Destroying EKS RBAC ##
+############################
+""" 
+terraform -chdir=terraform/provider/aws/environments/xctuality-higher-env/eks-v2/6-RBAC destroy -auto-approve=true -lock=false -var-file=/mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/terraform/provider/aws/environments/xctuality-higher-env/eks-v2/terraform.tfvars -compact-warnings
+
+
+echo """
+############################
 ##  Destroying EKS Helm ##
 ############################
 """ 
@@ -22,6 +30,8 @@ echo """
 ##  Destroying EKS Clusters ##
 ############################
 """ 
+
+
 terraform -chdir=terraform/provider/aws/environments/xctuality-higher-env/eks-v2/3-Cluster destroy -auto-approve=true -lock=false -var-file=/mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/terraform/provider/aws/environments/xctuality-higher-env/eks-v2/terraform.tfvars -compact-warnings
 
 
