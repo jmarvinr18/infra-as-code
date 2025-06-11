@@ -56,3 +56,7 @@ terraform -chdir=terraform/provider/aws/environments/xctuality-higher-env/eks-v2
 
 
 aws eks update-kubeconfig --region ap-southeast-1 --name xct-higher-eks
+
+kubectl apply -f terraform/provider/aws/environments/xctuality-higher-env/eks-v2/k8/roles/admin/admin-cluster-role-binding.yaml
+kubectl apply -f terraform/provider/aws/environments/xctuality-higher-env/eks-v2/k8/roles/viewer/viewer-cluster-role-binding.yaml
+kubectl apply -f terraform/provider/aws/environments/xctuality-higher-env/eks-v2/k8/roles/viewer/viewer-cluster-role.yaml

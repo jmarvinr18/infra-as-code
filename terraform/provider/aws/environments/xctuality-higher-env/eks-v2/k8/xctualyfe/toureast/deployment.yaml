@@ -1,0 +1,29 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: toureast-teaser-prd
+  namespace: xctualyfe-apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: toureast-teaser-prd
+  template:
+    metadata:
+      labels:
+        app: toureast-teaser-prd
+    spec:
+      containers:
+        - name: toureast-teaser
+          image: 408897322877.dkr.ecr.ap-southeast-1.amazonaws.com/toureast-teaser-prd:latest
+          ports:
+            - name: http
+              containerPort: 80
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 100m
+            limits:
+              memory: 128Mi
+              cpu: 100m    

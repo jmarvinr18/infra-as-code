@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: xctualyfe-ingress
+  namespace: xctualyfe-apps
+  annotations:
+    # Ingress class to use the NGINX Ingress Controlle
+    # AWS-specific annotations for SSL and the load balancer
+    alb.ingress.kubernetes.io/scheme: "internet-facing"
+    alb.ingress.kubernetes.io/target-type: "ip"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]' 
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:ap-southeast-1:408897322877:certificate/2a2b57c0-c2ba-46dc-8435-6bb482a136cb"
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    # alb.ingress.kubernetes.io/ssl-policy: 'ELBSecurityPolicy-TLS13-1-2-2021-06'
+    alb.ingress.kubernetes.io/healthcheck-path: /
+spec:
+  ingressClassName: alb
+  rules:
+    - host: toureast.xctualyfe.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: toureast-teaser-prd-svc
+                port:
+                  number: 80
