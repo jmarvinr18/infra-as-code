@@ -90,3 +90,70 @@ module "aws_lbc_policy_attachment" {
   role = module.eks_lbc_role.name
 
 }
+
+
+##### EKS CLUSTER AUTO SCALER ROLE & POLICIES
+
+module "cluster_autoscaler_role" {
+  source = "../../../../modules/iam/role"
+
+  role_name = "${var.eks_cluster_name}-cluster-autoscaler"
+
+  assume_role_policy = <<POLICY
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Principal": {
+          "Federated": "${module.oidc.arn}"
+        },
+        "Action": "sts:AssumeRoleWithWebIdentity",
+        "Condition": {
+          "StringEquals": {
+            "${module.oidc.url}:sub": "system:serviceaccount:kube-system:cluster-autoscaler",
+              "${module.oidc.url}:aud": "sts.amazonaws.com"
+          }
+        }
+      },
+      {
+        "Effect": "Allow",
+        "Principal": {
+          "Service": "pods.eks.amazonaws.com"
+        },
+        "Action": [
+          "sts:AssumeRole",
+          "sts:TagSession"
+        ]
+      }
+    ]
+  }
+  POLICY
+
+  tags = var.tags
+
+}
+
+module "cluster_autoscaler_policy" {
+  source           = "../../../../modules/iam/policy"
+  name             = var.aws_cluster_autoscaler_policy_name
+  policy_file_name = var.cluster_autoscaler_policy_file_name
+}
+
+module "cluster_autoscaler_policy_attachment" {
+  source             = "../../../../modules/iam/role_policy_attachment"
+  policy_attachments = [module.cluster_autoscaler_policy.arn]
+
+  role = module.cluster_autoscaler_role.name
+
+}
+
+module "eks_pod_identity_association" {
+  source = "../../../../modules/eks/pod-identity-association"
+  
+  cluster_name = var.eks_cluster_name
+  namespace = "kube-system"
+  role_arn = module.cluster_autoscaler_role.arn
+  service_account = "cluster-autoscaler"
+
+}

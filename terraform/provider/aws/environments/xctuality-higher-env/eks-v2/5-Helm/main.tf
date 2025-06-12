@@ -50,6 +50,10 @@ module "helm_release" {
           name  = "awsRegion"
           value = var.region
         },
+        {
+          name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+          value = data.aws_iam_role.cluster-autoscaler-role.arn
+        }          
       ]
   },    
   {

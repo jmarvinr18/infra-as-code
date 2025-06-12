@@ -52,15 +52,15 @@ variable "lbc_policy_file_name" {
   type = string
 }
 
-variable "aws_cluster_autoscaler_policy_name" {
-  type = string
-}
 
-variable "cluster_autoscaler_policy_file_name" {
-  type = string
-}
+
+
 
 variable "eks_admin_policy_name" {
+  type = string
+}
+
+variable "eks_assume_admin_policy_name" {
   type = string
 }
 

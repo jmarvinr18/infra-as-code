@@ -72,32 +72,8 @@ module "eks_node_policy_attachment" {
 # }
 
 
-##### EKS CLUSTER AUTO SCALER ROLE & POLICIES
 
-module "cluster_autoscaler_role" {
-  source = "../../../../modules/iam/role"
 
-  role_name = "${var.eks_cluster_name}-cluster-autoscaler"
-
-  assume_role_policy = var.eks_pods_service_file_name
-
-  tags = var.tags
-
-}
-
-module "cluster_autoscaler_policy" {
-  source           = "../../../../modules/iam/policy"
-  name             = var.aws_cluster_autoscaler_policy_name
-  policy_file_name = var.cluster_autoscaler_policy_file_name
-}
-
-module "cluster_autoscaler_policy_attachment" {
-  source             = "../../../../modules/iam/role_policy_attachment"
-  policy_attachments = [module.cluster_autoscaler_policy.arn]
-
-  role = module.cluster_autoscaler_role.name
-
-}
 
 
 ##### EKS ROLE BASED ACCESS CONTROL
@@ -146,7 +122,7 @@ module "eks_admin_role_policy_attachment" {
 
 module "eks_assume_admin_policy" {
   source = "../../../../modules/iam/policy"
-  name = var.eks_admin_policy_name
+  name = var.eks_assume_admin_policy_name
   policy_type = "string"
   policy_file_name = <<POLICY
   {

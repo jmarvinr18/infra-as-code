@@ -39,6 +39,11 @@ data "aws_iam_role" "lbc-role" {
   name = "eks-lbc-role"
 }
 
+data "aws_iam_role" "cluster-autoscaler-role" {
+  name = "eks-cluster-role"
+}
+
+
 
 data "aws_caller_identity" "this" {}
 
