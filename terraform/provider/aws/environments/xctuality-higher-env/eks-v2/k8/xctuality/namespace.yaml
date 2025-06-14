@@ -2,4 +2,11 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: xctualyfe-apps
+  name: xctuality-app-prd
+
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: xctuality-app-stg

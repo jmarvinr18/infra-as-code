@@ -16,6 +16,9 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
+
+## PRODUCTION ====================================================================
+
     - host: toureast-gameplay.xctuality.com
       http:
         paths:
@@ -26,6 +29,40 @@ spec:
                 name: toureast-gameplay-prd-svc
                 port:
                   number: 3000
+    - host: api-qr-generator.xctuality.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-qr-generator-prd-svc
+                port:
+                  number: 80
+    - host: qr.xctuality.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ui-qr-generator-prd-svc
+                port:
+                  number: 3000
+    - host: xctuality.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: xct-corp-stg-svc
+                port:
+                  number: 3000                     
+
+## STAGING ====================================================================
+
+
     - host: api-qr-generator-test.xctuality.com
       http:
         paths:
@@ -45,4 +82,4 @@ spec:
               service:
                 name: ui-qr-generator-stg-svc
                 port:
-                  number: 3000                  
+                  number: 3000
