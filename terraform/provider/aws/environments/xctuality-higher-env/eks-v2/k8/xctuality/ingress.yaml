@@ -49,6 +49,16 @@ spec:
                 name: ui-qr-generator-prd-svc
                 port:
                   number: 3000
+    - host: mautic.xctuality.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mautic-prd-svc
+                port:
+                  number: 80                  
     - host: xctuality.com
       http:
         paths:
@@ -63,23 +73,26 @@ spec:
 ## STAGING ====================================================================
 
 
-    - host: api-qr-generator-test.xctuality.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: api-qr-generator-stg-svc
-                port:
-                  number: 80
-    - host: qr-test.xctuality.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: ui-qr-generator-stg-svc
-                port:
-                  number: 3000
+    # - host: api-qr-generator-test.xctuality.com
+    #   http:
+    #     paths:
+    #       - path: /
+    #         pathType: Prefix
+    #         backend:
+    #           service:
+    #             name: api-qr-generator-stg-svc
+    #             port:
+    #               number: 80
+    # - host: qr-test.xctuality.com
+    #   http:
+    #     paths:
+    #       - path: /
+    #         pathType: Prefix
+    #         backend:
+    #           service:
+    #             name: ui-qr-generator-stg-svc
+    #             port:
+    #               number: 3000
+
+
+    
