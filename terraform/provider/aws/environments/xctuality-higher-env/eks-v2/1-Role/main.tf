@@ -80,10 +80,10 @@ module "eks_node_policy_attachment" {
 
 # Admin
 module "eks_admin_role" {
-  source = "../../../../modules/iam/role"
-  role_name = "${var.env}-${var.eks_cluster_name}-admin"
+  source                  = "../../../../modules/iam/role"
+  role_name               = "${var.env}-${var.eks_cluster_name}-admin"
   assume_role_policy_type = "string"
-  assume_role_policy = <<POLICY
+  assume_role_policy      = <<POLICY
   {
     "Version": "2012-10-17",
     "Statement": [
@@ -102,28 +102,28 @@ module "eks_admin_role" {
 }
 
 module "eks_admin_policy" {
-  source = "../../../../modules/iam/policy"
-  name = var.eks_admin_policy_name
+  source           = "../../../../modules/iam/policy"
+  name             = var.eks_admin_policy_name
   policy_file_name = var.eks_admin_policy_file_name
 }
 
 module "eks_admin_user" {
-  source = "../../../../modules/iam/user"
+  source        = "../../../../modules/iam/user"
   iam_user_name = var.eks_admin_user_name
 
 }
 
 module "eks_admin_role_policy_attachment" {
-    source             = "../../../../modules/iam/role_policy_attachment"
-    role = module.eks_admin_role.name    
-    policy_attachments = [module.eks_admin_policy.arn]
+  source             = "../../../../modules/iam/role_policy_attachment"
+  role               = module.eks_admin_role.name
+  policy_attachments = [module.eks_admin_policy.arn]
 }
 
 
 module "eks_assume_admin_policy" {
-  source = "../../../../modules/iam/policy"
-  name = var.eks_assume_admin_policy_name
-  policy_type = "string"
+  source           = "../../../../modules/iam/policy"
+  name             = var.eks_assume_admin_policy_name
+  policy_type      = "string"
   policy_file_name = <<POLICY
   {
     "Version": "2012-10-17",
@@ -141,27 +141,27 @@ module "eks_assume_admin_policy" {
 }
 
 module "eks_admin_user_policy_attachment" {
-    source             = "../../../../modules/iam/user_policy_attachment"
-    user = module.eks_admin_user.name    
-    policy_attachments = [module.eks_admin_policy.arn]
+  source             = "../../../../modules/iam/user_policy_attachment"
+  user               = module.eks_admin_user.name
+  policy_attachments = [module.eks_admin_policy.arn]
 }
 
 
 # Developer
 
 module "eks_developer_policy" {
-  source = "../../../../modules/iam/policy"
-  name = var.eks_developer_policy_name
+  source           = "../../../../modules/iam/policy"
+  name             = var.eks_developer_policy_name
   policy_file_name = var.eks_developer_policy_file_name
 }
 
 module "eks_developer_user" {
-  source = "../../../../modules/iam/user"
+  source        = "../../../../modules/iam/user"
   iam_user_name = var.eks_developer_user_name
 }
 
 module "eks_developer_user_policy_attachment" {
-    source             = "../../../../modules/iam/user_policy_attachment"
-    user = module.eks_developer_user.name    
-    policy_attachments = [module.eks_developer_policy.arn]
+  source             = "../../../../modules/iam/user_policy_attachment"
+  user               = module.eks_developer_user.name
+  policy_attachments = [module.eks_developer_policy.arn]
 }

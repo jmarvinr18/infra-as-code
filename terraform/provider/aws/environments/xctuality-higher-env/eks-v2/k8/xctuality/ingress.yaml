@@ -8,16 +8,15 @@ metadata:
     # AWS-specific annotations for SSL and the load balancer
     alb.ingress.kubernetes.io/scheme: "internet-facing"
     alb.ingress.kubernetes.io/target-type: "ip"
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]' 
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
     alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:ap-southeast-1:408897322877:certificate/c138241b-1ab7-42af-b410-975bcbb2168a"
-    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
     # alb.ingress.kubernetes.io/ssl-policy: 'ELBSecurityPolicy-TLS13-1-2-2021-06'
     alb.ingress.kubernetes.io/healthcheck-path: /
 spec:
   ingressClassName: alb
   rules:
-
-## PRODUCTION ====================================================================
+    ## PRODUCTION ====================================================================
 
     - host: toureast-gameplay.xctuality.com
       http:
@@ -58,7 +57,7 @@ spec:
               service:
                 name: mautic-prd-svc
                 port:
-                  number: 80                  
+                  number: 80
     - host: xctuality.com
       http:
         paths:
@@ -68,10 +67,9 @@ spec:
               service:
                 name: xct-corp-stg-svc
                 port:
-                  number: 3000                     
+                  number: 3000
 
-## STAGING ====================================================================
-
+    ## STAGING ====================================================================
 
     # - host: api-qr-generator-test.xctuality.com
     #   http:
@@ -94,5 +92,33 @@ spec:
     #             port:
     #               number: 3000
 
-
-    
+    - host: siglap-test.xctuality.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ui-siglap-stg-svc
+                port:
+                  number: 80
+    - host: admin-siglap-test.xctuality.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: admin-siglap-stg-svc
+                port:
+                  number: 80
+    - host: api-siglap-test.xctuality.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-siglap-stg-svc
+                port:
+                  number: 80
