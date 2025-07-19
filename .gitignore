@@ -51,3 +51,4 @@ Thumbs.db
 terraform.tfstate
 
 keys/*
+ca.crt

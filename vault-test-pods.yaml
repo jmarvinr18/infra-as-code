@@ -1,0 +1,303 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{"vault.hashicorp.com/agent-extra-args":"-address=https://vault.xctuality.com\n-tls-skip-verify=true    \n","vault.hashicorp.com/agent-inject":"true","vault.hashicorp.com/agent-inject-secret-config":"secret/data/xct-apps/config","vault.hashicorp.com/agent-inject-token":"true","vault.hashicorp.com/role":"xct-apps"},"name":"vault-test","namespace":"default"},"spec":{"containers":[{"command":["sleep","3600"],"image":"busybox","name":"app"}],"serviceAccountName":"xct-apps"}}
+    vault.hashicorp.com/agent-extra-args: "-address=https://vault.xctuality.com\n-tls-skip-verify=true
+      \   \n"
+    vault.hashicorp.com/agent-inject: "true"
+    vault.hashicorp.com/agent-inject-secret-config: secret/data/xct-apps/config
+    vault.hashicorp.com/agent-inject-status: injected
+    vault.hashicorp.com/agent-inject-token: "true"
+    vault.hashicorp.com/role: xct-apps
+  creationTimestamp: "2025-07-19T04:19:29Z"
+  generation: 1
+  name: vault-test
+  namespace: default
+  resourceVersion: "12934847"
+  uid: 78bd91a4-b74d-4b3d-8ca7-0ee06a65a7a7
+spec:
+  containers:
+  - command:
+    - sleep
+    - "3600"
+    image: busybox
+    imagePullPolicy: Always
+    name: app
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-rzjv8
+      readOnly: true
+    - mountPath: /vault/secrets
+      name: vault-secrets
+  - args:
+    - echo ${VAULT_CONFIG?} | base64 -d > /home/vault/config.json && vault agent -config=/home/vault/config.json
+    command:
+    - /bin/sh
+    - -ec
+    env:
+    - name: NAMESPACE
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.namespace
+    - name: HOST_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.hostIP
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    - name: VAULT_LOG_LEVEL
+      value: info
+    - name: VAULT_LOG_FORMAT
+      value: standard
+    - name: VAULT_CONFIG
+      value: eyJhdXRvX2F1dGgiOnsibWV0aG9kIjp7InR5cGUiOiJrdWJlcm5ldGVzIiwibW91bnRfcGF0aCI6ImF1dGgva3ViZXJuZXRlcyIsImNvbmZpZyI6eyJyb2xlIjoieGN0LWFwcHMiLCJ0b2tlbl9wYXRoIjoiL3Zhci9ydW4vc2VjcmV0cy9rdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3Rva2VuIn19LCJzaW5rIjpbeyJ0eXBlIjoiZmlsZSIsImNvbmZpZyI6eyJwYXRoIjoiL2hvbWUvdmF1bHQvLnZhdWx0LXRva2VuIn19LHsidHlwZSI6ImZpbGUiLCJjb25maWciOnsicGF0aCI6Ii92YXVsdC9zZWNyZXRzL3Rva2VuIn19XX0sImV4aXRfYWZ0ZXJfYXV0aCI6ZmFsc2UsInBpZF9maWxlIjoiL2hvbWUvdmF1bHQvLnBpZCIsInZhdWx0Ijp7ImFkZHJlc3MiOiJodHRwczovL3ZhdWx0LnhjdHVhbGl0eS5jb20iLCJ0bHNfc2tpcF92ZXJpZnkiOiB0cnVlfSwidGVtcGxhdGUiOlt7ImRlc3RpbmF0aW9uIjoiL3ZhdWx0L3NlY3JldHMvY29uZmlnIiwiY29udGVudHMiOiJ7eyB3aXRoIHNlY3JldCBcInNlY3JldC9kYXRhL3hjdC1hcHBzL2NvbmZpZ1wiIH19e3sgcmFuZ2UgJGssICR2IDo9IC5EYXRhIH19e3sgJGsgfX06IHt7ICR2IH19XG57eyBlbmQgfX17eyBlbmQgfX0iLCJsZWZ0X2RlbGltaXRlciI6Int7IiwicmlnaHRfZGVsaW1pdGVyIjoifX0ifV0sInRlbXBsYXRlX2NvbmZpZyI6eyJleGl0X29uX3JldHJ5X2ZhaWx1cmUiOnRydWV9fQo=
+    image: hashicorp/vault:1.19.0
+    imagePullPolicy: IfNotPresent
+    lifecycle: {}
+    name: vault-agent
+    resources:
+      limits:
+        cpu: 500m
+        memory: 128Mi
+      requests:
+        cpu: 250m
+        memory: 64Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsGroup: 1000
+      runAsNonRoot: true
+      runAsUser: 100
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-rzjv8
+      readOnly: true
+    - mountPath: /home/vault
+      name: home-sidecar
+    - mountPath: /vault/secrets
+      name: vault-secrets
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  initContainers:
+  - args:
+    - echo ${VAULT_CONFIG?} | base64 -d > /home/vault/config.json && vault agent -config=/home/vault/config.json
+    command:
+    - /bin/sh
+    - -ec
+    env:
+    - name: NAMESPACE
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.namespace
+    - name: HOST_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.hostIP
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    - name: VAULT_LOG_LEVEL
+      value: info
+    - name: VAULT_LOG_FORMAT
+      value: standard
+    - name: VAULT_CONFIG
+      value: eyJhdXRvX2F1dGgiOnsibWV0aG9kIjp7InR5cGUiOiJrdWJlcm5ldGVzIiwibW91bnRfcGF0aCI6ImF1dGgva3ViZXJuZXRlcyIsImNvbmZpZyI6eyJyb2xlIjoieGN0LWFwcHMiLCJ0b2tlbl9wYXRoIjoiL3Zhci9ydW4vc2VjcmV0cy9rdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3Rva2VuIn19LCJzaW5rIjpbeyJ0eXBlIjoiZmlsZSIsImNvbmZpZyI6eyJwYXRoIjoiL2hvbWUvdmF1bHQvLnZhdWx0LXRva2VuIn19LHsidHlwZSI6ImZpbGUiLCJjb25maWciOnsicGF0aCI6Ii92YXVsdC9zZWNyZXRzL3Rva2VuIn19XX0sImV4aXRfYWZ0ZXJfYXV0aCI6dHJ1ZSwicGlkX2ZpbGUiOiIvaG9tZS92YXVsdC8ucGlkIiwidmF1bHQiOnsiYWRkcmVzcyI6Imh0dHA6Ly92YXVsdC5rdWJlLXN5c3RlbS5zdmM6ODIwMCJ9LCJ0ZW1wbGF0ZSI6W3siZGVzdGluYXRpb24iOiIvdmF1bHQvc2VjcmV0cy9jb25maWciLCJjb250ZW50cyI6Int7IHdpdGggc2VjcmV0IFwic2VjcmV0L2RhdGEveGN0LWFwcHMvY29uZmlnXCIgfX17eyByYW5nZSAkaywgJHYgOj0gLkRhdGEgfX17eyAkayB9fToge3sgJHYgfX1cbnt7IGVuZCB9fXt7IGVuZCB9fSIsImxlZnRfZGVsaW1pdGVyIjoie3siLCJyaWdodF9kZWxpbWl0ZXIiOiJ9fSJ9XSwidGVtcGxhdGVfY29uZmlnIjp7ImV4aXRfb25fcmV0cnlfZmFpbHVyZSI6dHJ1ZX19
+    image: hashicorp/vault:1.19.0
+    imagePullPolicy: IfNotPresent
+    name: vault-agent-init
+    resources:
+      limits:
+        cpu: 500m
+        memory: 128Mi
+      requests:
+        cpu: 250m
+        memory: 64Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsGroup: 1000
+      runAsNonRoot: true
+      runAsUser: 100
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /home/vault
+      name: home-init
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-rzjv8
+      readOnly: true
+    - mountPath: /vault/secrets
+      name: vault-secrets
+  nodeName: ip-10-0-22-43.ap-southeast-1.compute.internal
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: xct-apps
+  serviceAccountName: xct-apps
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: kube-api-access-rzjv8
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+  - emptyDir:
+      medium: Memory
+    name: home-init
+  - emptyDir:
+      medium: Memory
+    name: home-sidecar
+  - emptyDir:
+      medium: Memory
+    name: vault-secrets
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2025-07-19T04:19:30Z"
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2025-07-19T04:19:29Z"
+    message: 'containers with incomplete status: [vault-agent-init]'
+    reason: ContainersNotInitialized
+    status: "False"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2025-07-19T04:19:29Z"
+    message: 'containers with unready status: [app vault-agent]'
+    reason: ContainersNotReady
+    status: "False"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2025-07-19T04:19:29Z"
+    message: 'containers with unready status: [app vault-agent]'
+    reason: ContainersNotReady
+    status: "False"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2025-07-19T04:19:29Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - image: busybox
+    imageID: ""
+    lastState: {}
+    name: app
+    ready: false
+    restartCount: 0
+    started: false
+    state:
+      waiting:
+        reason: PodInitializing
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-rzjv8
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /vault/secrets
+      name: vault-secrets
+  - image: hashicorp/vault:1.19.0
+    imageID: ""
+    lastState: {}
+    name: vault-agent
+    ready: false
+    restartCount: 0
+    started: false
+    state:
+      waiting:
+        reason: PodInitializing
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-rzjv8
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /home/vault
+      name: home-sidecar
+    - mountPath: /vault/secrets
+      name: vault-secrets
+  hostIP: 10.0.22.43
+  hostIPs:
+  - ip: 10.0.22.43
+  initContainerStatuses:
+  - allocatedResources:
+      cpu: 250m
+      memory: 64Mi
+    containerID: containerd://2296680b9cbac29f87fc22b21433c18d63018fc772cf0c59f07270346b55e6da
+    image: docker.io/hashicorp/vault:1.19.0
+    imageID: docker.io/hashicorp/vault@sha256:bbb7f98dc67d9ebdda1256de288df1cb9a5450990e48338043690bee3b332c90
+    lastState: {}
+    name: vault-agent-init
+    ready: false
+    resources:
+      limits:
+        cpu: 500m
+        memory: 128Mi
+      requests:
+        cpu: 250m
+        memory: 64Mi
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2025-07-19T04:19:29Z"
+    volumeMounts:
+    - mountPath: /home/vault
+      name: home-init
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-rzjv8
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /vault/secrets
+      name: vault-secrets
+  phase: Pending
+  podIP: 10.0.12.249
+  podIPs:
+  - ip: 10.0.12.249
+  qosClass: Burstable
+  startTime: "2025-07-19T04:19:29Z"

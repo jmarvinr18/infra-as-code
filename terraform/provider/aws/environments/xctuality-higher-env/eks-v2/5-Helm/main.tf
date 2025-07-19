@@ -83,6 +83,29 @@ module "helm_release" {
         }        
       ]
   },
+    {
+      helm_release_name = "vault"
+      helm_repository = "https://helm.releases.hashicorp.com"
+      chart = "vault"
+      namespace = "vault"
+      create_namespace = false
+      helm_version = "0.30.0"
+      helm_values = [""]
+      set = [ 
+        {
+          name  = "server.ha.enabled"
+          value = "true"
+        },
+        {
+          name  = "server.ha.raft.enabled"
+          value = "true"
+        },
+        {
+          name  = "global.externalVaultAddr"
+          value = "https://vault.xctuality.com"
+        }
+      ]
+  },
   # {
   #     helm_release_name = "external-nginx"
   #     helm_repository = "https://kubernetes.github.io/ingress-nginx"
@@ -101,3 +124,4 @@ module "helm_release" {
 ]
   depends_on = [ module.eks_pod_identity_association ]
 }
+
