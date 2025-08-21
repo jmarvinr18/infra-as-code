@@ -1,14 +1,13 @@
 build: 
-  echo Building
+  echo Building…
 
 test: 
-  echo Testing
+  echo Testing…
 
 lint: 
-  echo Linting
+  echo Linting…
 
-commit:
-  git remote -v 
+commit: 
   git add -A
   git commit -m "update file"
   git push origin main

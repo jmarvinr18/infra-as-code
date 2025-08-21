@@ -1,4 +1,4 @@
-# Xctuality DevOps Infrastructure as a Code Repo
+# JMR DevOps Infrastructure as a Code Repo
 
 
 ## Ansible Playbooks
