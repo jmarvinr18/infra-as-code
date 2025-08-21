@@ -7,7 +7,8 @@ test:
 lint: 
   echo Linting
 
-commit: 
+commit:
+  git remote -v 
   git add -A
   git commit -m "update file"
   git push origin main
