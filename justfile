@@ -10,7 +10,11 @@ lint:
 commit: 
   git add -A
   git commit -m "update file"
+  git remote -v
+  git remote set-url origin git@bitbucket.org:xctuality/infra-as-code.git
   git push origin main
+  git remote -v
+  git remote set-url origin git@github.com:jmarvinr18/infra-as-code.git
 
 git-personal: 
   eval $(ssh-agent)
