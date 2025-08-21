@@ -15,7 +15,9 @@ commit:
   git push origin main
   git remote -v
   git remote set-url origin git@github.com:jmarvinr18/infra-as-code.git
-
+  git push origin main
+  git remote -v
+  
 git-personal: 
   eval $(ssh-agent)
   ssh-add ~/.ssh/personal-git
