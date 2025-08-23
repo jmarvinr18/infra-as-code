@@ -1,0 +1,11 @@
+---
+- name: Provisioning the server requirements
+  hosts: all
+  become: true  
+  roles:
+    ## Execute build and deploy script
+    - role: "/mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/ansible/roles/execute-script"
+      vars:
+        SCRIPT: "/mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/terraform/provider/aws/environments/global-devsecops-env/ec2/vpn/assets/scripts/wgvpn-installer.sh"
+
+
