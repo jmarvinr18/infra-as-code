@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Trigger Jenkins Job</title>
+</head>
+<body>
+  <h2>Trigger Jenkins Build</h2>
+
+  <label>Jenkins URL:</label>
+  <input type="text" id="jenkinsUrl" value="https://jenkins.xctuality.com"><br><br>
+
+  <label>Job Name:</label>
+  <input type="text" id="jobName" value="example-job"><br><br>
+
+  <label>Username:</label>
+  <input type="text" id="username" value="your-username"><br><br>
+
+  <label>API Token:</label>
+  <input type="password" id="apiToken" value="your-api-token"><br><br>
+
+  <button onclick="triggerBuild()">Trigger Build</button>
+
+  <p id="result"></p>
+
+  <script>
+    async function triggerBuild() {
+      const jenkinsUrl = document.getElementById("jenkinsUrl").value;
+      const jobName    = document.getElementById("jobName").value;
+      const username   = document.getElementById("username").value;
+      const apiToken   = document.getElementById("apiToken").value;
+
+      const authHeader = 'Basic ' + btoa(username + ':' + apiToken);
+
+      try {
+        // First get CSRF crumb
+        const crumbResp = await fetch(`${jenkinsUrl}/crumbIssuer/api/json`, {
+          headers: { 'Authorization': authHeader }
+        });
+
+        if (!crumbResp.ok) throw new Error("Failed to get crumb");
+        const crumbData = await crumbResp.json();
+
+        // Then trigger the build
+        const buildResp = await fetch(`${jenkinsUrl}/job/${jobName}/build`, {
+          method: 'POST',
+          headers: {
+            'Authorization': authHeader,
+            [crumbData.crumbRequestField]: crumbData.crumb
+          }
+        });
+
+        if (buildResp.ok) {
+          document.getElementById("result").innerText = "✅ Build triggered successfully!";
+        } else {
+          document.getElementById("result").innerText = "❌ Failed to trigger build: " + buildResp.status;
+        }
+      } catch (err) {
+        document.getElementById("result").innerText = "⚠️ Error: " + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
