@@ -63,6 +63,14 @@ terraform -chdir=terraform/provider/aws/environments/xctuality-higher-env/eks-v2
 terraform -chdir=terraform/provider/aws/environments/xctuality-higher-env/eks-v2/7-AddOn apply -auto-approve=true -lock=false -var-file=/mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/terraform/provider/aws/environments/xctuality-higher-env/eks-v2/terraform.tfvars -compact-warnings
 
 
+echo """
+##################################
+##  Provisioning EKS EBS CSI    ##
+##################################
+""" 
+terraform -chdir=terraform/provider/aws/environments/xctuality-higher-env/eks-v2/8-Storage init
+terraform -chdir=terraform/provider/aws/environments/xctuality-higher-env/eks-v2/8-Storage apply -auto-approve=true -lock=false -var-file=/mnt/d/Users/RouVin/Documents/xctuality/devops/infra-as-code/terraform/provider/aws/environments/xctuality-higher-env/eks-v2/terraform.tfvars -compact-warnings
+
 
 
 

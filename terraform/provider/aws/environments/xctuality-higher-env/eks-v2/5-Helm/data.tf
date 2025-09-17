@@ -55,6 +55,7 @@ data "aws_eks_cluster_auth" "this" {
   name = var.eks_cluster_name
 }
 
+
 # data "kubernetes_config_map" "aws-auth" {
 #   metadata {
 #     name      = "aws-auth"
