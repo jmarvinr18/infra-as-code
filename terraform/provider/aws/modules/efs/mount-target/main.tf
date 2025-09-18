@@ -1,4 +1,5 @@
 resource "aws_efs_mount_target" "this" {
-  file_system_id = aws_efs_file_system.foo.id
-  subnet_id      = aws_subnet.alpha.id
+  file_system_id = var.file_system_id
+  subnet_id      = var.subnet_id
+  security_groups = var.security_groups
 }

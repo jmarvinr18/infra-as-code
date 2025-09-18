@@ -1,9 +1,9 @@
 
-# provider "kubernetes" {
-#   host                   = data.aws_eks_cluster.this.endpoint
-#   cluster_ca_certificate = base64decode(data.aws_eks_cluster.this.certificate_authority[0].data)
-#   token                  = data.aws_eks_cluster_auth.this.token
-# }
+provider "kubernetes" {
+  host                   = data.aws_eks_cluster.this.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.this.certificate_authority[0].data)
+  token                  = data.aws_eks_cluster_auth.this.token
+}
 
 terraform {
   required_version = ">= 1.0"
@@ -13,6 +13,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.49"
     }
+    helm = {
+      source  = "hashicorp/helm"
+      version = ">= 2.0.0"
+    }    
   }
 }
 
@@ -21,11 +25,11 @@ provider "aws" {
   
 }
 
-provider "helm" {
-  kubernetes {
-    config_path = "~/.kube/config"
-    host                   = data.aws_eks_cluster.this.endpoint
-    cluster_ca_certificate = base64decode(data.aws_eks_cluster.this.certificate_authority[0].data)
-    token                  = data.aws_eks_cluster_auth.this.token    
-  }
-}
+# provider "helm" {
+#   kubernetes {
+#     config_path = "~/.kube/config"
+#     host                   = data.aws_eks_cluster.this.endpoint
+#     cluster_ca_certificate = base64decode(data.aws_eks_cluster.this.certificate_authority[0].data)
+#     token                  = data.aws_eks_cluster_auth.this.token    
+#   }
+# }
