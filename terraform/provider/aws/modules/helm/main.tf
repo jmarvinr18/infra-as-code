@@ -12,13 +12,10 @@ resource "helm_release" "this" {
   values     = each.value.helm_values
 
 
-  dynamic "set" {
-    for_each = each.value.set
-
-    content { 
-      name  = set.value.name
-      value = set.value.value
+  set = [
+    for item in each.value.set : {
+      name  = item.name
+      value = item.value
     }
-  }
-
+  ]
 }
