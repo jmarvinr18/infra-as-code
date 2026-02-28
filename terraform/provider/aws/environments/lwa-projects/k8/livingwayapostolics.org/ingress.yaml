@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: xctuality-ingress
+  namespace: xctuality-lwaapp
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: api-portal.livingwayapostolics.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: lwa-api-prd-svc
+                port:
+                  number: 80
+    - host: www.livingwayapostolics.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: lwa-ui-prd-svc
+                port:
+                  number: 80                  
+    - host: livingwayapostolics.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: lwa-ui-prd-svc
+                port:
+                  number: 80                  

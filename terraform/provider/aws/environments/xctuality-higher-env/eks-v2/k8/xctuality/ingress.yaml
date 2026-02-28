@@ -122,3 +122,14 @@ spec:
                 name: api-siglap-stg-svc
                 port:
                   number: 80
+
+    - host: api-drm.xctuality.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: server-drm-stg-svc
+                port:
+                  number: 4000
