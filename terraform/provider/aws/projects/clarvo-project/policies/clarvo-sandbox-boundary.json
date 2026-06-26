@@ -1,0 +1,28 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "BoundaryAllow",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:*","s3:*","lambda:*","es:*","aoss:*",
+        "sagemaker:*","glue:*","comprehend:*",
+        "states:*","events:*","logs:*","cloudwatch:*",
+        "kms:*","ssm:*","iam:PassRole","iam:Get*","iam:List*",
+        "cloudformation:*","sts:AssumeRole","ecr:*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "BoundaryDeny",
+      "Effect": "Deny",
+      "Action": [
+        "iam:CreateUser","iam:CreateAccessKey","iam:*LoginProfile",
+        "iam:AttachUserPolicy","iam:PutUserPolicy",
+        "iam:DeleteRolePermissionsBoundary",
+        "organizations:*","account:*","billing:*","aws-portal:*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

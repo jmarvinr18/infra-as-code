@@ -1,0 +1,65 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "LabServices",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:*", "s3:*", "lambda:*",
+        "es:*", "aoss:*",
+        "sagemaker:*", "glue:*", "comprehend:*",
+        "states:*", "events:*", "logs:*", "cloudwatch:*"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": { "aws:RequestedRegion": ["ap-southeast-1", "us-east-1"] }
+      }
+    },
+    {
+      "Sid": "PassExecRolesToServicesOnly",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "arn:aws:iam::408897322877:role/clarvo-*-exec",
+      "Condition": {
+        "StringEquals": {
+          "iam:PassedToService": [
+            "lambda.amazonaws.com", "sagemaker.amazonaws.com",
+            "glue.amazonaws.com", "states.amazonaws.com", "bedrock.amazonaws.com"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "CreateBoundedExecRoles",
+      "Effect": "Allow",
+      "Action": ["iam:CreateRole","iam:TagRole","iam:AttachRolePolicy","iam:PutRolePolicy","iam:CreateServiceLinkedRole"],
+      "Resource": "arn:aws:iam::408897322877:role/clarvo-*-exec",
+      "Condition": {
+        "StringEquals": { "iam:PermissionsBoundary": "arn:aws:iam::408897322877:policy/clarvo-sandbox-boundary" }
+      }
+    },
+    {
+      "Sid": "UseProjectCmk",
+      "Effect": "Allow",
+      "Action": ["kms:Encrypt","kms:Decrypt","kms:GenerateDataKey","kms:DescribeKey"],
+      "Resource": "arn:aws:kms:ap-southeast-1:408897322877:key/<CMK_ID>"
+    },
+    {
+      "Sid": "ReadIamForConsole",
+      "Effect": "Allow",
+      "Action": ["iam:Get*","iam:List*"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "HardDenies",
+      "Effect": "Deny",
+      "Action": [
+        "iam:CreateUser","iam:CreateAccessKey","iam:*LoginProfile",
+        "iam:AttachUserPolicy","iam:PutUserPolicy","iam:UpdateAssumeRolePolicy",
+        "iam:DeleteRolePermissionsBoundary",
+        "organizations:*","account:*","billing:*","aws-portal:*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
