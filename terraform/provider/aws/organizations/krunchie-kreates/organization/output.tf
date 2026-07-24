@@ -9,6 +9,10 @@ output "accounts" {
   value = module.organization.accounts
 }
 
+output "client_id" {
+  value = module.clients.id
+}
+
 
 output "roots" {
   value = module.organization.roots

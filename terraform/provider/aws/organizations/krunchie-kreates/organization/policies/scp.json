@@ -1,0 +1,26 @@
+{
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Sid": "DenyOutsideAllowedRegions",
+         "Effect": "Deny",
+         "NotAction": [
+           "iam:*", "sts:*", "organizations:*", "route53:*",
+           "cloudfront:*", "waf:*", "support:*", "budgets:*"
+         ],
+         "Resource": "*",
+         "Condition": {
+           "StringNotEquals": {
+             "aws:RequestedRegion": ["ap-southeast-1", "us-east-1"]
+           }
+         }
+       },
+       {
+         "Sid": "DenyRootUser",
+         "Effect": "Deny",
+         "Action": "*",
+         "Resource": "*",
+         "Condition": { "StringLike": { "aws:PrincipalArn": "arn:aws:iam::*:root" } }
+       }
+     ]
+   }

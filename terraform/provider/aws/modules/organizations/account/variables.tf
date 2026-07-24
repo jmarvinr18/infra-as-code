@@ -1,13 +1,13 @@
-variable "feature_set" {
-  type = string
-}
-
 variable "clients" {
   description = "Map of client accounts to create."
   type = map(object({
     email       = string
     environment = string
   }))
+}
+
+variable "parent_id" {
+  type = string
 }
 
 variable "role_name" {
@@ -22,23 +22,6 @@ variable "close_on_deletion" {
   type = bool
 }
 
-
-variable "name" {
-  type = string
-}
-
-variable "description" {
-  type = string
-}
-
-variable "type" {
-  type = string
-}
-
-variable "content" {
-  type = string
-}
-
-# variable "organization_ou_client_id" {
-#   type = string
+# variable "tags" {
+#   type = map(string)
 # }
