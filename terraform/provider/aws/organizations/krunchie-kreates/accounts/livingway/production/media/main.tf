@@ -112,6 +112,10 @@ module "cloudfront_cache_policy" {
   max_ttl     = var.cache_max_ttl
   min_ttl     = var.cache_min_ttl
   headers     = ["Origin", "Access-Control-Request-Headers", "Access-Control-Request-Method"]
+
+  # The API appends ?v=<content hash> so a replaced image gets a fresh URL.
+  # Without this the CDN would ignore it and keep serving the old picture.
+  query_strings = ["v"]
 }
 
 module "cloudfront_response_headers_policy" {

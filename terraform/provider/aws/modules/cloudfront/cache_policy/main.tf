@@ -26,7 +26,15 @@ resource "aws_cloudfront_cache_policy" "this" {
     }
 
     query_strings_config {
-      query_string_behavior = var.query_string_behavior
+      query_string_behavior = length(var.query_strings) > 0 ? "whitelist" : var.query_string_behavior
+
+      dynamic "query_strings" {
+        for_each = length(var.query_strings) > 0 ? [var.query_strings] : []
+
+        content {
+          items = query_strings.value
+        }
+      }
     }
   }
 }

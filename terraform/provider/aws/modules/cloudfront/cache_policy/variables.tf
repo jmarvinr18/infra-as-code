@@ -28,8 +28,17 @@ variable "cookie_behavior" {
 }
 
 variable "query_string_behavior" {
-  type    = string
-  default = "none"
+  description = "Used when query_strings is empty; otherwise the behavior is whitelist"
+  type        = string
+  default     = "none"
+}
+
+# Media keys are derived from the record id, so a replaced image reuses its key
+# and its URL. The application appends a content hash to distinguish versions,
+# which only busts the cache if that parameter is part of the cache key.
+variable "query_strings" {
+  type    = list(string)
+  default = []
 }
 
 # Origin and the CORS preflight headers must be in the cache key, or one
