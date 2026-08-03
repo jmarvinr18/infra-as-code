@@ -52,3 +52,5 @@ terraform.tfstate
 
 keys/*
 ca.crt
+
+.env
