@@ -1,0 +1,28 @@
+var ALLOWED = ${allowed_domains};
+
+function handler(event) {
+  var headers = event.request.headers;
+
+  // No Referer: social scrapers, email image proxies, direct opens.
+  // These must pass or link previews and emailed QR codes break.
+  if (!headers.referer || !headers.referer.value) {
+    return event.request;
+  }
+
+  var referer = headers.referer.value.toLowerCase();
+  var host = referer.replace(/^https?:\/\//, "").split("/")[0].split(":")[0];
+
+  for (var i = 0; i < ALLOWED.length; i++) {
+    var domain = ALLOWED[i].toLowerCase();
+    // The leading dot matters: it stops evil-livingwayapostolics.org matching.
+    if (host === domain || host.endsWith("." + domain)) {
+      return event.request;
+    }
+  }
+
+  return {
+    statusCode: 403,
+    statusDescription: "Forbidden",
+    body: "This image may only be embedded on Living Way Apostolics sites."
+  };
+}
