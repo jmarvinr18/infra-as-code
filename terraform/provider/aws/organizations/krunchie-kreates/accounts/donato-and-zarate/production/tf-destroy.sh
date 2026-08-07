@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 echo """
 ######################################
 ##  Destroying VPC Infrastructure   ##
