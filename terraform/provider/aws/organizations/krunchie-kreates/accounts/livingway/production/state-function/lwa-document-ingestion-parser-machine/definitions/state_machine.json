@@ -1,0 +1,294 @@
+{
+  "Comment": "LWA ingestion (minimal)",
+  "StartAt": "ClassifyByType",
+  "States": {
+    "ClassifyByType": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.detail.object.key",
+          "StringMatches": "raw/*.pdf",
+          "Next": "Textract"
+        },
+        {
+          "Variable": "$.detail.object.key",
+          "StringMatches": "raw/*.png",
+          "Next": "Rekognition"
+        },
+        {
+          "Variable": "$.detail.object.key",
+          "StringMatches": "raw/*.jpg",
+          "Next": "Rekognition"
+        },
+        {
+          "Variable": "$.detail.object.key",
+          "StringMatches": "raw/*.mp3",
+          "Next": "Transcribe"
+        },
+        {
+          "Variable": "$.detail.object.key",
+          "StringMatches": "raw/*.wav",
+          "Next": "Transcribe"
+        },
+        {
+          "Next": "Transcribe",
+          "Variable": "$.detail.object.key",
+          "StringMatches": "raw/*.mp4"
+        }
+      ],
+      "Default": "QuarantineTranscript"
+    },
+    "Textract": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:textract:startDocumentTextDetection",
+      "Parameters": {
+        "DocumentLocation": {
+          "S3Object": {
+            "Bucket.$": "$.detail.bucket.name",
+            "Name.$": "$.detail.object.key"
+          }
+        }
+      },
+      "ResultPath": "$.textract",
+      "Next": "WaitForTextract"
+    },
+    "WaitForTextract": {
+      "Type": "Wait",
+      "Seconds": 15,
+      "Next": "GetDocumentTextDetection"
+    },
+    "GetDocumentTextDetection": {
+      "Type": "Task",
+      "Parameters": {
+        "JobId.$": "$.textract.JobId",
+        "MaxResults": 1
+      },
+      "Resource": "arn:aws:states:::aws-sdk:textract:getDocumentTextDetection",
+      "Next": "TextractDone?",
+      "ResultPath": "$.textractResult"
+    },
+    "TextractDone?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Next": "FormatAndEnrich",
+          "Variable": "$.textractResult.JobStatus",
+          "StringEquals": "SUCCEEDED"
+        },
+        {
+          "Next": "QuarantineWithMetric",
+          "Variable": "$.textractResult.JobStatus",
+          "StringEquals": "FAILED"
+        }
+      ],
+      "Default": "WaitForTextract"
+    },
+    "FormatAndEnrich": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:ap-southeast-1:792682046440:function:lwaDocumentProcessor:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2,
+          "JitterStrategy": "FULL"
+        }
+      ],
+      "Next": "StartDataQualityRulesetEvaluationRun"
+    },
+    "Rekognition": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:rekognition:detectLabels",
+      "Parameters": {
+        "Image": {
+          "S3Object": {
+            "Bucket.$": "$.detail.bucket.name",
+            "Name.$": "$.detail.object.key"
+          }
+        }
+      },
+      "Next": "FormatDetectedLabels",
+      "ResultPath": "$.rekognition"
+    },
+    "FormatDetectedLabels": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:ap-southeast-1:792682046440:function:lwaDocumentProcessor:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2,
+          "JitterStrategy": "FULL"
+        }
+      ],
+      "Next": "StartDataQualityRulesetEvaluationRun"
+    },
+    "Transcribe": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:transcribe:startTranscriptionJob",
+      "Parameters": {
+        "TranscriptionJobName.$": "States.UUID()",
+        "IdentifyLanguage": true,
+        "Media": {
+          "MediaFileUri.$": "States.Format('s3://{}/{}', $.detail.bucket.name, $.detail.object.key)"
+        },
+        "OutputBucketName.$": "$.detail.bucket.name"
+      },
+      "ResultPath": "$.transcribe",
+      "Next": "WaitForTranscript"
+    },
+    "WaitForTranscript": {
+      "Type": "Wait",
+      "Seconds": 5,
+      "Next": "GetTranscriptionJob"
+    },
+    "GetTranscriptionJob": {
+      "Type": "Task",
+      "Parameters": {
+        "TranscriptionJobName.$": "$.transcribe.TranscriptionJob.TranscriptionJobName"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:transcribe:getTranscriptionJob",
+      "Next": "TranscriptDone?",
+      "ResultPath": "$.transcribeResult"
+    },
+    "TranscriptDone?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Next": "FormatTranscript",
+          "Variable": "$.transcribeResult.TranscriptionJob.TranscriptionJobStatus",
+          "StringEquals": "COMPLETED"
+        },
+        {
+          "Next": "QuarantineTranscript",
+          "Variable": "$.transcribeResult.TranscriptionJob.TranscriptionJobStatus",
+          "StringEquals": "FAILED"
+        }
+      ],
+      "Default": "WaitForTranscript"
+    },
+    "QuarantineTranscript": {
+      "Type": "Pass",
+      "End": true
+    },
+    "FormatTranscript": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:ap-southeast-1:792682046440:function:lwaDocumentProcessor:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2,
+          "JitterStrategy": "FULL"
+        }
+      ],
+      "Next": "StartDataQualityRulesetEvaluationRun"
+    },
+    "EmitMetric": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:cloudwatch:putMetricData",
+      "Parameters": {
+        "Namespace": "LWA/Ingestion",
+        "MetricData": [
+          {
+            "MetricName": "DocumentsProcessed",
+            "Value": 1,
+            "Unit": "Count"
+          }
+        ]
+      },
+      "Next": "StartDataQualityRulesetEvaluationRun"
+    },
+    "StartDataQualityRulesetEvaluationRun": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:glue:startDataQualityRulesetEvaluationRun",
+      "Parameters": {
+        "DataSource": {
+          "GlueTable": {
+            "DatabaseName": "lwa_ingest",
+            "TableName": "processed"
+          }
+        },
+        "Role": "arn:aws:iam::792682046440:role/lwa-glue-dq-role",
+        "RulesetNames": [
+          "lwa_processed_quality"
+        ]
+      },
+      "Next": "WaitDQ",
+      "ResultPath": "$.dq"
+    },
+    "WaitDQ": {
+      "Type": "Wait",
+      "Seconds": 20,
+      "Next": "GetDQ"
+    },
+    "GetDQ": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:glue:getDataQualityRulesetEvaluationRun",
+      "Parameters": {
+        "RunId.$": "$.dq.RunId"
+      },
+      "ResultPath": "$.dqResult",
+      "Next": "DQDone?"
+    },
+    "DQDone?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.dqResult.Status",
+          "StringEquals": "SUCCEEDED",
+          "Next": "EmitMetric"
+        },
+        {
+          "Variable": "$.dqResult.Status",
+          "StringEquals": "FAILED",
+          "Next": "QuarantineWithMetric"
+        },
+        {
+          "Next": "QuarantineWithMetric",
+          "Variable": "$.dqResult.Status",
+          "StringEquals": "RUNNING"
+        }
+      ],
+      "Default": "WaitDQ"
+    },
+    "QuarantineWithMetric": {
+      "Type": "Pass",
+      "Result": "quarantined",
+      "End": true
+    }
+  }
+}
