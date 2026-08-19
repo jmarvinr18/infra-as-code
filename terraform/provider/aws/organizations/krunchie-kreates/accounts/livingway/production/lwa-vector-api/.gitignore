@@ -1,0 +1,3 @@
+.build/
+.terraform/
+global-bundle.pem

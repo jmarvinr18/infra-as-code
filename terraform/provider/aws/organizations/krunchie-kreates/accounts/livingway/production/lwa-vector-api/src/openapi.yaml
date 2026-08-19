@@ -1,0 +1,563 @@
+openapi: 3.0.3
+
+info:
+  title: Adoption & Feedback Tracker API
+  description: |
+    Central ingestion and query API for AI agent adoption and feedback.
+
+    This document is the contract. The Python SDK, the CLI, the Copilot Studio
+    connector and any raw-HTTP integration all speak exactly this. If a payload
+    changes here, it changes in every client — and if a client needs a field
+    that is not here, the field goes here first.
+
+    Authentication is an API key issued per registered agent, sent in the
+    `X-Api-Key` header and verified against a hashed value in `agent_config`.
+  version: 1.0.0
+
+servers:
+  - url: https://{apiId}.execute-api.{region}.amazonaws.com/{stage}
+    description: Deployed stage
+    variables:
+      apiId:
+        default: em3zuodhb0
+      region:
+        default: ap-southeast-1
+      stage:
+        default: develop
+
+security:
+  - ApiKeyAuth: []
+
+tags:
+  - name: usage
+    description: Adoption event ingestion
+  - name: feedback
+    description: Delayed feedback survey lifecycle
+  - name: insights
+    description: Read-only aggregates and generated briefings
+
+paths:
+  # ---------------------------------------------------------------------
+  # Usage ingestion
+  # ---------------------------------------------------------------------
+
+  /v1/usage:
+    post:
+      tags: [usage]
+      summary: Record a batch of usage events
+      description: |
+        Accepts a batch because the SDK buffers events in memory and flushes on
+        an interval. A batch of one is normal and valid.
+
+        Every event carries an `event_id`. The server treats it as an
+        idempotency key, so a retried batch does not double-count adoption.
+      operationId: recordUsage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UsageBatch"
+            examples:
+              singleEvent:
+                summary: One invocation from a Bedrock agent
+                value:
+                  events:
+                    - event_id: 8f14e45f-ceea-467a-9f6a-1b2c3d4e5f60
+                      agent_id: slgs-ai-agent-v1
+                      platform: bedrock_agentcore
+                      acf2_id: abc1234
+                      business_group: SLGS
+                      division: DevSecOps
+                      event_type: invocation
+                      timestamp: "2026-08-18T10:22:00Z"
+                      metadata: {}
+      responses:
+        "200":
+          description: Batch accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsageAccepted"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  # ---------------------------------------------------------------------
+  # Feedback
+  # ---------------------------------------------------------------------
+
+  /v1/feedback/check:
+    post:
+      tags: [feedback]
+      summary: Ask whether a feedback survey is due for this user
+      description: |
+        Compares the configured threshold against `first_use` for the
+        (agent, user) pair. Returns `due: false` before the threshold, after a
+        survey has already been answered, or when the user has never used the
+        agent.
+
+        Synchronous by design: the calling agent needs the answer in order to
+        decide whether to show anything.
+      operationId: checkFeedbackDue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedbackCheckRequest"
+      responses:
+        "200":
+          description: Survey status for this user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackCheckResponse"
+              examples:
+                notDue:
+                  summary: Threshold not yet crossed
+                  value:
+                    due: false
+                due:
+                  summary: Survey is due
+                  value:
+                    due: true
+                    questions: [sentiment, time_saved, barriers, value_signals]
+                    threshold_days: 14
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /v1/feedback/submit:
+    post:
+      tags: [feedback]
+      summary: Submit a completed feedback survey
+      description: |
+        Stores the structured answers and marks the user as answered so the
+        survey stops firing. The free-text `barriers` field is later embedded
+        and clustered into named themes.
+      operationId: submitFeedback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedbackSubmission"
+            examples:
+              typical:
+                summary: A completed survey
+                value:
+                  response_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                  agent_id: slgs-ai-agent-v1
+                  platform: bedrock_agentcore
+                  acf2_id: abc1234
+                  sentiment: 4
+                  time_saved: 2h/week
+                  barriers: The documentation was unclear about setup
+                  value_signals: {}
+                  submitted_at: "2026-08-18T10:30:00Z"
+      responses:
+        "200":
+          description: Submission stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackAccepted"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  # ---------------------------------------------------------------------
+  # Insights
+  # ---------------------------------------------------------------------
+
+  /v1/insights/adoption:
+    get:
+      tags: [insights]
+      summary: Adoption aggregates by org unit and over time
+      description: |
+        Backs both the dashboard charts and the insight agent's
+        `get_adoption_metrics` tool. One endpoint serving both is deliberate:
+        it is the reason a briefing can never contradict the chart beside it.
+      operationId: getAdoptionMetrics
+      parameters:
+        - $ref: "#/components/parameters/AgentId"
+        - $ref: "#/components/parameters/FromDate"
+        - $ref: "#/components/parameters/ToDate"
+      responses:
+        "200":
+          description: Adoption aggregates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdoptionMetrics"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /v1/insights/themes:
+    get:
+      tags: [insights]
+      summary: Ranked barrier themes
+      description: |
+        Clusters produced by embedding the free-text barriers and grouping them
+        by cosine distance in pgvector. Backs the insight agent's
+        `get_barrier_themes` tool.
+      operationId: getBarrierThemes
+      parameters:
+        - $ref: "#/components/parameters/AgentId"
+      responses:
+        "200":
+          description: Barrier themes ranked by frequency
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BarrierThemes"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /v1/insights/briefing:
+    get:
+      tags: [insights]
+      summary: Latest cached leadership briefing
+      description: |
+        Returns the most recent briefing generated by the insight agent. Served
+        from cache rather than generating on request, so dashboard traffic does
+        not translate into agent invocations.
+
+        `generated_at` is returned so the dashboard can show the reader how
+        fresh the briefing is. `citations` carries the figure behind each claim.
+      operationId: getLatestBriefing
+      parameters:
+        - $ref: "#/components/parameters/AgentId"
+      responses:
+        "200":
+          description: Latest briefing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Briefing"
+        "404":
+          description: No briefing has been generated yet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+      description: Per-agent key, issued at registration and stored hashed.
+
+  parameters:
+    AgentId:
+      name: agent_id
+      in: query
+      required: true
+      schema:
+        type: string
+      description: Agent to scope the query to.
+    FromDate:
+      name: from
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+      description: Inclusive start date. Defaults to 30 days ago.
+    ToDate:
+      name: to
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+      description: Inclusive end date. Defaults to today.
+
+  schemas:
+    UsageEvent:
+      type: object
+      required: [event_id, agent_id, acf2_id, event_type, timestamp]
+      properties:
+        event_id:
+          type: string
+          format: uuid
+          description: Client-generated idempotency key. Duplicates are ignored.
+        agent_id:
+          type: string
+          description: Identifies the agent. Align with the agent registry convention.
+          example: slgs-ai-agent-v1
+        platform:
+          type: string
+          description: Free-form so a new platform needs no schema change.
+          example: bedrock_agentcore
+        acf2_id:
+          type: string
+          example: abc1234
+        business_group:
+          type: string
+          nullable: true
+          example: SLGS
+        division:
+          type: string
+          nullable: true
+          example: DevSecOps
+        event_type:
+          type: string
+          default: invocation
+          example: invocation
+        timestamp:
+          type: string
+          format: date-time
+          description: RFC 3339, UTC. Client-supplied.
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Platform-specific extras. Not indexed; do not put identifiers here.
+
+    UsageBatch:
+      type: object
+      required: [events]
+      properties:
+        events:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/UsageEvent"
+
+    UsageAccepted:
+      type: object
+      properties:
+        accepted:
+          type: integer
+          description: Events written. Lower than the batch size when duplicates were ignored.
+        duplicates:
+          type: integer
+
+    FeedbackCheckRequest:
+      type: object
+      required: [agent_id, acf2_id]
+      properties:
+        agent_id:
+          type: string
+        acf2_id:
+          type: string
+
+    FeedbackCheckResponse:
+      type: object
+      required: [due]
+      properties:
+        due:
+          type: boolean
+        questions:
+          type: array
+          items:
+            type: string
+          description: Present only when due.
+        threshold_days:
+          type: integer
+          description: Threshold in force for this agent, for display.
+
+    FeedbackSubmission:
+      type: object
+      required: [response_id, agent_id, acf2_id, submitted_at]
+      properties:
+        response_id:
+          type: string
+          format: uuid
+        agent_id:
+          type: string
+        platform:
+          type: string
+        acf2_id:
+          type: string
+        sentiment:
+          oneOf:
+            - type: integer
+              minimum: 1
+              maximum: 5
+            - type: string
+          nullable: true
+          description: Numeric scale preferred; string accepted so clients need no lookup table.
+        time_saved:
+          oneOf:
+            - type: number
+            - type: string
+          nullable: true
+        barriers:
+          type: string
+          nullable: true
+          description: Free text. Embedded and clustered into themes.
+        value_signals:
+          type: object
+          additionalProperties: true
+        submitted_at:
+          type: string
+          format: date-time
+
+    FeedbackAccepted:
+      type: object
+      properties:
+        accepted:
+          type: boolean
+
+    AdoptionMetrics:
+      type: object
+      properties:
+        agent_id:
+          type: string
+        window:
+          type: object
+          properties:
+            from:
+              type: string
+              format: date
+            to:
+              type: string
+              format: date
+        totals:
+          type: object
+          properties:
+            events:
+              type: integer
+            active_users:
+              type: integer
+        by_division:
+          type: array
+          items:
+            type: object
+            properties:
+              business_group:
+                type: string
+              division:
+                type: string
+              active_users:
+                type: integer
+              events:
+                type: integer
+        trend:
+          type: array
+          description: One bucket per day, for the trend chart.
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              active_users:
+                type: integer
+
+    BarrierThemes:
+      type: object
+      properties:
+        agent_id:
+          type: string
+        themes:
+          type: array
+          items:
+            type: object
+            properties:
+              theme_id:
+                type: string
+              label:
+                type: string
+                example: Unclear documentation
+              member_count:
+                type: integer
+              examples:
+                type: array
+                items:
+                  type: string
+                description: A few representative verbatim barriers.
+
+    Briefing:
+      type: object
+      properties:
+        agent_id:
+          type: string
+        generated_at:
+          type: string
+          format: date-time
+        sufficient_data:
+          type: boolean
+          description: |
+            False when the agent declined to draw conclusions. The dashboard
+            must render this state rather than treating it as an error — an
+            honest refusal is a valid outcome.
+        summary:
+          type: string
+        insight:
+          type: string
+        recommendation:
+          type: string
+        citations:
+          type: array
+          description: The figure behind each claim. Empty is a red flag, not a normal state.
+          items:
+            type: object
+            properties:
+              claim:
+                type: string
+              metric:
+                type: string
+              value:
+                type: string
+
+    Error:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: string
+
+  responses:
+    BadRequest:
+      description: Malformed payload or failed validation
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Missing or invalid API key
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    TooManyRequests:
+      description: Stage throttling limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    ServerError:
+      description: Unhandled server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
