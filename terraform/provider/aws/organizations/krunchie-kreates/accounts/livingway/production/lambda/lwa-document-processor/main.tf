@@ -75,7 +75,24 @@ module "role" {
               "comprehend:DetectPiiEntities"
             ]
             Resource = "*"
-          }        
+          }
+        ]
+      })
+    },
+    {
+      name = "bedrock-invoke"
+      policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+          {
+            Sid    = "BedrockInvoke"
+            Effect = "Allow"
+            Action = [
+              "bedrock:InvokeModel",
+              "bedrock:InvokeModelWithResponseStream"
+            ]
+            Resource = "arn:aws:bedrock:*::foundation-model/*"
+          }
         ]
       })
     }
