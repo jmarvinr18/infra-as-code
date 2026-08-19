@@ -50,3 +50,25 @@ terraform -chdir=provider/aws/tier/env/users destroy -auto-approve
 terraform -chdir=provider/aws/tier/env/mongodb init
 terraform -chdir=provider/aws/tier/env/mongodb apply -auto-approve
 terraform -chdir=provider/aws/tier/env/mongodb destroy -auto-approve
+
+===== gcp =====
+
+** state-bootstrap (run first, holds the backend for the roots below)
+terraform -chdir=provider/gcp/organizations/orobo-tech/state-bootstrap init
+terraform -chdir=provider/gcp/organizations/orobo-tech/state-bootstrap apply -auto-approve
+note: never destroy this, the bucket holds every other root's state.
+
+** organization (projects + api enablement)
+terraform -chdir=provider/gcp/organizations/orobo-tech/organization init
+terraform -chdir=provider/gcp/organizations/orobo-tech/organization plan
+terraform -chdir=provider/gcp/organizations/orobo-tech/organization apply -auto-approve
+terraform -chdir=provider/gcp/organizations/orobo-tech/organization destroy -auto-approve
+note: project ids are globally unique and stay reserved ~30 days after deletion.
+note: deletion_policy is PREVENT in terraform.tfvars, set DELETE before destroying.
+
+** budget
+terraform -chdir=provider/gcp/organizations/orobo-tech/budget init
+terraform -chdir=provider/gcp/organizations/orobo-tech/budget apply -auto-approve
+terraform -chdir=provider/gcp/organizations/orobo-tech/budget destroy -auto-approve
+note: needs roles/billing.admin on the billing account, project level iam is not enough.
+note: billing_account is empty in terraform.tfvars until a billing account is visible.
