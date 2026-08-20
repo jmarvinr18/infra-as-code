@@ -89,6 +89,16 @@ variable "detailed_metrics_enabled" {
   default     = false
 }
 
+variable "route_settings" {
+  description = "Per-route overrides of the stage defaults, keyed by route key. Only routes that need different limits belong here."
+  type = map(object({
+    detailed_metrics_enabled = optional(bool)
+    throttling_burst_limit   = optional(number)
+    throttling_rate_limit    = optional(number)
+  }))
+  default = {}
+}
+
 variable "throttling_burst_limit" {
   type    = number
   default = 100

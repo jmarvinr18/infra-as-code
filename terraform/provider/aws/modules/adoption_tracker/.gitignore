@@ -1,0 +1,4 @@
+# Build output of data.archive_file — regenerated on every plan.
+.build/
+.terraform/
+__pycache__/

@@ -1,0 +1,109 @@
+#!/bin/bash
+set -euxo pipefail
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Docker engine. Amazon Linux 2023 ships it in the default repos; the compose
+# plugin does not, so it is fetched to the CLI plugin directory by hand.
+# ─────────────────────────────────────────────────────────────────────────────
+
+dnf -y update
+dnf -y install docker
+
+install -d -m 0755 /usr/local/lib/docker/cli-plugins
+curl -fsSL "https://github.com/docker/compose/releases/download/v${compose_version}/docker-compose-linux-$(uname -m)" \
+  -o /usr/local/lib/docker/cli-plugins/docker-compose
+chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+systemctl enable --now docker
+usermod -aG docker ec2-user
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Postgres + pgvector.
+#
+# pgvector/pgvector:pgNN is the upstream Postgres image with the extension
+# already compiled in — nothing is built on the instance. The database lives on
+# a named volume so `docker compose down` and instance reboots do not take the
+# data with them.
+# ─────────────────────────────────────────────────────────────────────────────
+
+install -d -m 0755 ${compose_dir}
+install -d -m 0755 ${compose_dir}/initdb
+
+cat > ${compose_dir}/.env <<'ENVFILE'
+POSTGRES_DB=${postgres_db}
+POSTGRES_USER=${postgres_user}
+POSTGRES_PASSWORD=${postgres_password}
+ENVFILE
+chmod 0600 ${compose_dir}/.env
+
+cat > ${compose_dir}/docker-compose.yml <<'COMPOSE'
+services:
+  postgres:
+    image: ${postgres_image}
+    container_name: ${container_name}
+    restart: always
+    env_file: .env
+    ports:
+      # Bound to every interface on purpose: this host exists so a developer's
+      # SQL client and a Lambda outside the VPC can both reach it. The security
+      # group is what actually limits who gets here.
+      - "${postgres_port}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    shm_size: ${shm_size}
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=${max_connections}"
+      - "-c"
+      - "shared_buffers=${shared_buffers}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${postgres_user} -d ${postgres_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
+COMPOSE
+
+# Runs once, on the first boot of an empty volume — the same contract as any
+# other file in docker-entrypoint-initdb.d.
+cat > ${compose_dir}/initdb/000-extensions.sql <<'INITSQL'
+CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+INITSQL
+
+${extra_initdb}
+
+cd ${compose_dir}
+docker compose up -d
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Survive a reboot. The compose project restarts with the docker daemon, but a
+# unit makes the dependency explicit rather than relying on restart policy
+# alone.
+# ─────────────────────────────────────────────────────────────────────────────
+
+cat > /etc/systemd/system/pgvector.service <<'UNIT'
+[Unit]
+Description=pgvector via docker compose
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=${compose_dir}
+ExecStart=/usr/bin/docker compose up -d
+ExecStop=/usr/bin/docker compose stop
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+systemctl daemon-reload
+systemctl enable pgvector.service
+
+${extra_user_data}
