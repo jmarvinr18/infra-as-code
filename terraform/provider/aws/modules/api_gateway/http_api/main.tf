@@ -96,6 +96,19 @@ resource "aws_apigatewayv2_stage" "this" {
     }
   }
 
+  # Per-route overrides. A route whose backend is expensive — one model
+  # invocation per call, say — should not share the stage default with a
+  # health check.
+  dynamic "route_settings" {
+    for_each = var.route_settings
+    content {
+      route_key                = route_settings.key
+      detailed_metrics_enabled = route_settings.value.detailed_metrics_enabled
+      throttling_burst_limit   = route_settings.value.throttling_burst_limit
+      throttling_rate_limit    = route_settings.value.throttling_rate_limit
+    }
+  }
+
   default_route_settings {
     detailed_metrics_enabled = var.detailed_metrics_enabled
     throttling_burst_limit   = var.throttling_burst_limit
