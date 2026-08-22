@@ -32,6 +32,22 @@ locals {
 
   tags = merge(var.tags, { Stack = var.name_prefix })
 
+  # The OpenAPI document is the route contract. Terraform only adds the
+  # Lambda integration because the HTTP API module still owns that wiring.
+  openapi_spec = yamldecode(file("${path.module}/openapi.yaml"))
+
+  openapi_routes = {
+    for route in flatten([
+      for path, path_item in local.openapi_spec.paths : [
+        for method, operation in path_item : {
+          route_key = "${upper(method)} ${path}"
+        } if contains(["get", "post", "put", "patch", "delete", "options", "head"], lower(method))
+      ]
+      ]) : route.route_key => {
+      integration_key = "api"
+    }
+  }
+
   # Only mint a key when encryption is on and no existing key was supplied.
   create_db_kms_key = var.db_storage_encrypted && var.db_kms_key_id == null && var.db_create_kms_key
 
@@ -41,7 +57,7 @@ locals {
 }
 
 module "lambda_sg" {
-  source = "../../../../../../modules/sg"
+  source = "../../../../modules/sg"
 
   security_group_name = "${var.name_prefix}-lambda"
   vpc_id              = local.vpc_id
@@ -130,7 +146,7 @@ data "aws_iam_policy_document" "db_kms" {
 
 module "db_kms" {
   count  = local.create_db_kms_key ? 1 : 0
-  source = "../../../../../../modules/kms"
+  source = "../../../../modules/kms"
 
   description             = "RDS storage encryption for ${var.name_prefix}"
   kms_alias_name          = "alias/${var.name_prefix}-rds"
@@ -142,7 +158,7 @@ module "db_kms" {
 }
 
 module "rds" {
-  source = "../../../../../../modules/rds/postgres"
+  source = "../../../../modules/rds/postgres"
 
   identifier = "${var.name_prefix}pg"
   vpc_id     = local.vpc_id
@@ -167,7 +183,7 @@ module "rds" {
   allowed_cidr_blocks = var.db_allowed_cidr_blocks
 
   storage_encrypted = var.db_storage_encrypted
-  kms_key_id        = local.db_kms_key_id
+  kms_key_id        = var.db_kms_key_id
 
   backup_retention_period = var.db_backup_retention_period
   skip_final_snapshot     = var.db_skip_final_snapshot
@@ -225,7 +241,7 @@ data "archive_file" "this" {
 }
 
 module "role" {
-  source = "../../../../../../modules/lambda/role"
+  source = "../../../../modules/lambda/role"
 
   role_name = "${var.name_prefix}-api-role"
 
@@ -273,13 +289,13 @@ locals {
   )
 }
 
-module "function" {
-  source = "../../../../../../modules/lambda/function"
+module "usage_function" {
+  source = "../../../../modules/lambda/function"
 
-  function_name = "${var.name_prefix}-api"
-  description   = "HTTP API handler backed by Postgres/pgvector"
+  function_name = "${var.name_prefix}-usage"
+  description   = ""
   role_arn      = module.role.arn
-  handler       = var.handler
+  handler       = var.usage_handler
   runtime       = var.runtime
 
   filename         = data.archive_file.this.output_path
@@ -299,41 +315,271 @@ module "function" {
   tags = local.tags
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
-# API Gateway HTTP API
-# ─────────────────────────────────────────────────────────────────────────────
+module "metric_function" {
+  source = "../../../../modules/lambda/function"
 
-module "api" {
-  source = "../../../../../../modules/api_gateway/http_api"
+  function_name = "${var.name_prefix}-metrics"
+  description   = ""
+  role_arn      = module.role.arn
+  handler       = var.metrics_handler
+  runtime       = var.runtime
 
-  name        = "${var.name_prefix}_api"
-  description = "Public entrypoint for ${var.name_prefix}"
+  filename         = data.archive_file.this.output_path
+  source_code_hash = data.archive_file.this.output_base64sha256
 
-  cors_configuration = var.cors_allow_origins == null ? null : {
-    allow_origins = var.cors_allow_origins
+  timeout     = var.timeout
+  memory_size = var.memory_size
+  layers      = var.layers
+
+  vpc_config = {
+    subnet_ids         = local.subnet_ids
+    security_group_ids = [module.lambda_sg.id]
   }
 
-  integrations = {
-    api = {
-      lambda_invoke_arn    = module.function.invoke_arn
-      lambda_function_name = module.function.function_name
-      # HTTP API integrations cap at 30s regardless of the function's own timeout.
-      timeout_milliseconds = min(var.timeout * 1000, 30000)
-    }
-  }
-
-  routes = {
-    "GET /health"      = { integration_key = "api" }
-    "POST /documents"  = { integration_key = "api" }
-    "POST /search"     = { integration_key = "api" }
-    "POST /admin/init" = { integration_key = "api", authorization_type = "AWS_IAM" }
-  }
-
-  stage_name            = var.stage_name
-  log_retention_in_days = var.log_retention_in_days
-
-  throttling_burst_limit = var.throttling_burst_limit
-  throttling_rate_limit  = var.throttling_rate_limit
+  environment_variables = local.lambda_environment
 
   tags = local.tags
+}
+
+module "briefing_function" {
+  source = "../../../../modules/lambda/function"
+
+  function_name = "${var.name_prefix}-briefing"
+  description   = ""
+  role_arn      = module.role.arn
+  handler       = var.briefing_handler
+  runtime       = var.runtime
+
+  filename         = data.archive_file.this.output_path
+  source_code_hash = data.archive_file.this.output_base64sha256
+
+  timeout     = var.timeout
+  memory_size = var.memory_size
+  layers      = var.layers
+
+  vpc_config = {
+    subnet_ids         = local.subnet_ids
+    security_group_ids = [module.lambda_sg.id]
+  }
+
+  environment_variables = local.lambda_environment
+
+  tags = local.tags
+}
+
+module "embedding_function" {
+  source = "../../../../modules/lambda/function"
+
+  function_name = "${var.name_prefix}-embedding"
+  description   = ""
+  role_arn      = module.role.arn
+  handler       = var.embedding_handler
+  runtime       = var.runtime
+
+  filename         = data.archive_file.this.output_path
+  source_code_hash = data.archive_file.this.output_base64sha256
+
+  timeout     = var.timeout
+  memory_size = var.memory_size
+  layers      = var.layers
+
+  vpc_config = {
+    subnet_ids         = local.subnet_ids
+    security_group_ids = [module.lambda_sg.id]
+  }
+
+  environment_variables = local.lambda_environment
+
+  tags = local.tags
+}
+
+module "feedback_function" {
+  source = "../../../../modules/lambda/function"
+
+  function_name = "${var.name_prefix}-feedback"
+  description   = ""
+  role_arn      = module.role.arn
+  handler       = var.feedback_handler
+  runtime       = var.runtime
+
+  filename         = data.archive_file.this.output_path
+  source_code_hash = data.archive_file.this.output_base64sha256
+
+  timeout     = var.timeout
+  memory_size = var.memory_size
+  layers      = var.layers
+
+  vpc_config = {
+    subnet_ids         = local.subnet_ids
+    security_group_ids = [module.lambda_sg.id]
+  }
+
+  environment_variables = local.lambda_environment
+
+  tags = local.tags
+}
+
+module "bootstrap_function" {
+  source = "../../../../modules/lambda/function"
+
+  function_name = "${var.name_prefix}-bootstrap"
+  description   = ""
+  role_arn      = module.role.arn
+  handler       = var.bootstrap_handler
+  runtime       = var.runtime
+
+  filename         = data.archive_file.this.output_path
+  source_code_hash = data.archive_file.this.output_base64sha256
+
+  timeout     = var.timeout
+  memory_size = var.memory_size
+  layers      = var.layers
+
+  vpc_config = {
+    subnet_ids         = local.subnet_ids
+    security_group_ids = [module.lambda_sg.id]
+  }
+
+  environment_variables = local.lambda_environment
+
+  tags = local.tags
+}
+# ─────────────────────────────────────────────────────────────────────────────
+# Private API Gateway REST API
+# ─────────────────────────────────────────────────────────────────────────────
+
+resource "aws_api_gateway_rest_api" "private" {
+  name        = "${var.name_prefix}_api"
+  description = "Private REST API for ${var.name_prefix}"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [merge({
+      Effect    = "Allow"
+      Principal = "*"
+      Action    = "execute-api:Invoke"
+      Resource  = "execute-api:/*"
+      }, length(var.api_gateway_vpc_endpoint_ids) > 0 ? {
+      Condition = {
+        StringEquals = {
+          "aws:SourceVpce" = var.api_gateway_vpc_endpoint_ids
+        }
+      }
+    } : {})]
+  })
+
+  endpoint_configuration {
+    types            = ["PRIVATE"]
+    vpc_endpoint_ids = length(var.api_gateway_vpc_endpoint_ids) > 0 ? var.api_gateway_vpc_endpoint_ids : null
+  }
+
+  tags = local.tags
+}
+
+resource "aws_api_gateway_resource" "v1" {
+  rest_api_id = aws_api_gateway_rest_api.private.id
+  parent_id   = aws_api_gateway_rest_api.private.root_resource_id
+  path_part   = "v1"
+}
+
+resource "aws_api_gateway_resource" "v1_child" {
+  for_each = toset(["health", "usage", "feedback", "insights"])
+
+  rest_api_id = aws_api_gateway_rest_api.private.id
+  parent_id   = aws_api_gateway_resource.v1.id
+  path_part   = each.value
+}
+
+resource "aws_api_gateway_resource" "feedback_leaf" {
+  for_each = toset(["check", "submit"])
+
+  rest_api_id = aws_api_gateway_rest_api.private.id
+  parent_id   = aws_api_gateway_resource.v1_child["feedback"].id
+  path_part   = each.value
+}
+
+resource "aws_api_gateway_resource" "insights_leaf" {
+  for_each = toset(["adoption", "themes", "briefing"])
+
+  rest_api_id = aws_api_gateway_rest_api.private.id
+  parent_id   = aws_api_gateway_resource.v1_child["insights"].id
+  path_part   = each.value
+}
+
+locals {
+  api_route_resource_ids = {
+    "/v1/health"            = aws_api_gateway_resource.v1_child["health"].id
+    "/v1/usage"             = aws_api_gateway_resource.v1_child["usage"].id
+    "/v1/feedback/check"    = aws_api_gateway_resource.feedback_leaf["check"].id
+    "/v1/feedback/submit"   = aws_api_gateway_resource.feedback_leaf["submit"].id
+    "/v1/insights/adoption" = aws_api_gateway_resource.insights_leaf["adoption"].id
+    "/v1/insights/themes"   = aws_api_gateway_resource.insights_leaf["themes"].id
+    "/v1/insights/briefing" = aws_api_gateway_resource.insights_leaf["briefing"].id
+  }
+
+  api_route_functions = {
+    "GET /v1/health"           = module.metrics_function.arn
+    "POST /v1/usage"           = module.usage_function.arn
+    "POST /v1/feedback/check"  = module.feedback_function.arn
+    "POST /v1/feedback/submit" = module.feedback_function.arn
+    "GET /v1/insights/adoption" = module.metrics_function.arn
+    "GET /v1/insights/themes" = module.metrics_function.arn
+    "GET /v1/insights/briefing" = module.briefing_function.arn
+  }
+}
+
+resource "aws_api_gateway_method" "route" {
+  for_each = local.openapi_routes
+
+  rest_api_id   = aws_api_gateway_rest_api.private.id
+  resource_id   = local.api_route_resource_ids[split(" ", each.key)[1]]
+  http_method   = split(" ", each.key)[0]
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "route" {
+  for_each = local.openapi_routes
+
+  rest_api_id             = aws_api_gateway_rest_api.private.id
+  resource_id             = aws_api_gateway_method.route[each.key].resource_id
+  http_method             = aws_api_gateway_method.route[each.key].http_method
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${local.api_route_functions[each.key]}/invocations"
+}
+
+resource "aws_lambda_permission" "private_api" {
+  for_each      = {
+    usage    = module.usage_function.function_name
+    feedback = module.feedback_function.function_name
+    metrics  = module.metrics_function.function_name
+    briefing = module.briefing_function.function_name
+  }
+  statement_id  = "AllowPrivateRestApiInvoke-${each.key}"
+  action        = "lambda:InvokeFunction"
+  function_name = each.value
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.private.execution_arn}/*/*"
+}
+
+resource "aws_api_gateway_deployment" "private" {
+  rest_api_id = aws_api_gateway_rest_api.private.id
+
+  triggers = {
+    redeployment = sha1(jsonencode([
+      local.openapi_spec,
+      local.openapi_routes,
+      [for route in aws_api_gateway_integration.route : route.id],
+    ]))
+  }
+
+  depends_on = [aws_api_gateway_integration.route]
+}
+
+resource "aws_api_gateway_stage" "private" {
+  rest_api_id          = aws_api_gateway_rest_api.private.id
+  deployment_id        = aws_api_gateway_deployment.private.id
+  stage_name           = var.stage_name
+  xray_tracing_enabled = false
+  tags                 = local.tags
 }

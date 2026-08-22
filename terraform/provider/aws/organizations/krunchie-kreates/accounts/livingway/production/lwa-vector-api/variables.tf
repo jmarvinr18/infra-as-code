@@ -1,6 +1,6 @@
 variable "region" {
   type    = string
-  default = "ap-southeast-1"
+  default = "us-east-1"
 }
 
 variable "client" {
@@ -37,6 +37,12 @@ variable "subnet_ids" {
 
 variable "endpoint_subnet_ids" {
   description = "Subnets for the Secrets Manager interface endpoint — one per AZ at most. Empty reuses subnet_ids."
+  type        = list(string)
+  default     = []
+}
+
+variable "api_gateway_vpc_endpoint_ids" {
+  description = "Optional execute-api interface VPC endpoint IDs to associate with and restrict the private REST API."
   type        = list(string)
   default     = []
 }
@@ -163,10 +169,49 @@ variable "db_deletion_protection" {
 
 # ── Lambda ───────────────────────────────────────────────────────────────────
 
-variable "handler" {
+variable "usage_handler" {
   type    = string
-  default = "lambda_function.lambda_handler"
+  default = "handlers.usage.lambda_handler"
 }
+
+variable "feedback_handler" {
+  type    = string
+  default = "handlers.feedback.lambda_handler"
+}
+
+variable "metrics_handler" {
+  type    = string
+  default = "handlers.metrics.lambda_handler"
+}
+
+variable "embedding_handler" {
+  type    = string
+  default = "handlers.embedding.lambda_handler"
+}
+
+variable "briefing_handler" {
+  type    = string
+  default = "handlers.briefing.lambda_handler"
+}
+
+variable "bootstrap_handler" {
+  type    = string
+  default = "handlers.bootstrap.lambda_handler"
+}
+
+variable "functions" {
+  type = list(string)
+  default = [ 
+              "usage_function", 
+              "feedback_function", 
+              "metrics_function", 
+              "embedding_function", 
+              "briefing_function", 
+              "bootstrap_function"
+            ]
+}
+
+
 
 variable "runtime" {
   type    = string
@@ -175,7 +220,7 @@ variable "runtime" {
 
 variable "timeout" {
   type    = number
-  default = 30
+  default = 600
 }
 
 variable "memory_size" {
@@ -206,6 +251,12 @@ variable "cors_allow_origins" {
   description = "Origins allowed by CORS. Null disables CORS entirely."
   type        = list(string)
   default     = null
+}
+
+variable "access_logs_enabled" {
+  description = "Create API Gateway access logs. Enable after CloudWatch Logs permissions are available."
+  type        = bool
+  default     = false
 }
 
 variable "log_retention_in_days" {

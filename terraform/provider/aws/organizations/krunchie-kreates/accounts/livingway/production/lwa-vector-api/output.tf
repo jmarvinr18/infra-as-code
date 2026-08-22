@@ -1,28 +1,28 @@
 output "api_endpoint" {
-  description = "Base URL of the HTTP API."
-  value       = module.api.api_endpoint
+  description = "Base URL of the private REST API."
+  value       = "https://${aws_api_gateway_rest_api.private.id}.execute-api.${var.region}.amazonaws.com"
 }
 
 output "api_invoke_url" {
   description = "URL to call, stage path included."
-  value       = module.api.invoke_url
+  value       = "https://${aws_api_gateway_rest_api.private.id}.execute-api.${var.region}.amazonaws.com/${var.stage_name}"
 }
 
 output "api_id" {
-  value = module.api.api_id
+  value = aws_api_gateway_rest_api.private.id
 }
 
 output "api_routes" {
-  value = keys(module.api.route_ids)
+  value = keys(local.openapi_routes)
 }
 
-output "function_name" {
-  value = module.function.function_name
-}
+# output "function_name" {
+#   value = module.function.function_name
+# }
 
-output "function_arn" {
-  value = module.function.arn
-}
+# output "function_arn" {
+#   value = module.function.arn
+# }
 
 output "lambda_security_group_id" {
   value = module.lambda_sg.id
