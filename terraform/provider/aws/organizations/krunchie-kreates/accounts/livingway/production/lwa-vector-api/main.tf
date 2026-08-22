@@ -57,7 +57,7 @@ locals {
 }
 
 module "lambda_sg" {
-  source = "../../../../modules/sg"
+  source = "../../../../../../modules/sg"
 
   security_group_name = "${var.name_prefix}-lambda"
   vpc_id              = local.vpc_id
@@ -146,7 +146,7 @@ data "aws_iam_policy_document" "db_kms" {
 
 module "db_kms" {
   count  = local.create_db_kms_key ? 1 : 0
-  source = "../../../../modules/kms"
+  source = "../../../../../../modules/kms"
 
   description             = "RDS storage encryption for ${var.name_prefix}"
   kms_alias_name          = "alias/${var.name_prefix}-rds"
@@ -158,7 +158,7 @@ module "db_kms" {
 }
 
 module "rds" {
-  source = "../../../../modules/rds/postgres"
+  source = "../../../../../../modules/rds/postgres"
 
   identifier = "${var.name_prefix}pg"
   vpc_id     = local.vpc_id
@@ -241,7 +241,7 @@ data "archive_file" "this" {
 }
 
 module "role" {
-  source = "../../../../modules/lambda/role"
+  source = "../../../../../../modules/lambda/role"
 
   role_name = "${var.name_prefix}-api-role"
 
@@ -281,6 +281,7 @@ locals {
       DB_PORT = tostring(module.rds.port)
       DB_NAME = module.rds.db_name
       DB_USER = module.rds.master_username
+      DB_MODE = "ec2"
     },
     var.use_managed_master_password
     ? { DB_SECRET_ARN = module.rds.master_user_secret_arn }
@@ -290,7 +291,7 @@ locals {
 }
 
 module "usage_function" {
-  source = "../../../../modules/lambda/function"
+  source = "../../../../../../modules/lambda/function"
 
   function_name = "${var.name_prefix}-usage"
   description   = ""
@@ -315,8 +316,8 @@ module "usage_function" {
   tags = local.tags
 }
 
-module "metric_function" {
-  source = "../../../../modules/lambda/function"
+module "metrics_function" {
+  source = "../../../../../../modules/lambda/function"
 
   function_name = "${var.name_prefix}-metrics"
   description   = ""
@@ -342,7 +343,7 @@ module "metric_function" {
 }
 
 module "briefing_function" {
-  source = "../../../../modules/lambda/function"
+  source = "../../../../../../modules/lambda/function"
 
   function_name = "${var.name_prefix}-briefing"
   description   = ""
@@ -368,7 +369,7 @@ module "briefing_function" {
 }
 
 module "embedding_function" {
-  source = "../../../../modules/lambda/function"
+  source = "../../../../../../modules/lambda/function"
 
   function_name = "${var.name_prefix}-embedding"
   description   = ""
@@ -394,7 +395,7 @@ module "embedding_function" {
 }
 
 module "feedback_function" {
-  source = "../../../../modules/lambda/function"
+  source = "../../../../../../modules/lambda/function"
 
   function_name = "${var.name_prefix}-feedback"
   description   = ""
@@ -420,7 +421,7 @@ module "feedback_function" {
 }
 
 module "bootstrap_function" {
-  source = "../../../../modules/lambda/function"
+  source = "../../../../../../modules/lambda/function"
 
   function_name = "${var.name_prefix}-bootstrap"
   description   = ""

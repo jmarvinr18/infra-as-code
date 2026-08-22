@@ -10,9 +10,9 @@ terraform {
 
 provider "aws" {
   region = var.region
-  # assume_role {
-  #   role_arn = "arn:aws:iam::${var.client_account_id}:role/OrganizationAccountAccessRole"
-  # }
+  assume_role {
+    role_arn = "arn:aws:iam::${var.client_account_id}:role/OrganizationAccountAccessRole"
+  }
   default_tags {
     tags = {
       Client      = var.client

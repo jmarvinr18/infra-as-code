@@ -1,13 +1,13 @@
 client            = "aiteam-prmj"
 client_account_id = "792682046440"
 environment       = "production"
-region            = "us-east-1"
+region            = "ap-southeast-1"
 
 name_prefix = "aiteam-prmj-tracker"
 
 # Uses the default VPC and all of its subnets when left unset.
-vpc_id     = "vpc-085a67f0f42321ea2"
-subnet_ids = ["subnet-0c72ad73db3532b65", "subnet-052b47383e32c965d"]
+vpc_id     = "vpc-01444b6a823bd52b0"
+subnet_ids = ["subnet-0b450de5bd160f51e", "subnet-095eebf4dcc799429", "subnet-070d2bd48e49801f3"]
 
 db_name                    = "vectordb"
 db_instance_class          = "db.t4g.micro"
@@ -16,7 +16,7 @@ db_backup_retention_period = 1
 
 stage_name = "develop"
 
-db_kms_key_id = "arn:aws:kms:us-east-1:234371409330:key/15b9068f-6945-408b-a260-3d54f5969ef3"
+db_kms_key_id = "arn:aws:kms:ap-southeast-1:792682046440:key/a4c0a651-fc82-4427-aaf5-3e0b2c7ac1d8"
 
 # false keeps the demo free of a Secrets Manager VPC endpoint; see variables.tf.
 use_managed_master_password = false
